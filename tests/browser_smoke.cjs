@@ -43,11 +43,11 @@ function check(ok,title){assert.ok(ok,title);report.checks.push(title);console.l
   await page.touchscreen.tap(1115,340);await wait(200);check((await state()).food===food+1,'touch cannot collect food twice');
   await click(430,835);
   const cdp=await context.newCDPSession(page);
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:1410,y:374}]});await wait(400);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:1410,y:336}]});await wait(400);
   check((await state()).petting && (await state()).hearts===3,'held touch shows three hearts');
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await wait(150);
   check(!(await state()).petting && (await state()).hearts===0,'touch release removes hearts');
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:1410,y:374}]});await wait(200);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:1410,y:336}]});await wait(200);
   await page.keyboard.press('h');await wait(200);
   check(!(await state()).petting && (await state()).view==='human','screen switch during touch cancels hearts');
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});

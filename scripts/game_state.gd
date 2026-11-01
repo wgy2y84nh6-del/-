@@ -7,7 +7,9 @@ signal event(kind: String)
 const EGG_INTERVAL := 50.0
 const HATCH_TIME := 20.0
 const FINAL_TIME := 40.0
-const FOOD_CYCLE := 6.0
+const FOOD_CYCLE := 7.0
+const HUNGER_DRAIN := 0.56
+const CLEAN_FLOOR := 50.0 # No wash action: cleanliness cannot block reproduction.
 const MAX_PARASITES := 3
 const SAVE_VERSION := 1
 
@@ -59,8 +61,8 @@ func advance(dt: float) -> void:
 		if not p.alive:
 			continue
 		p.age += dt
-		p.hunger = maxf(0, p.hunger - 0.5 * pressure * dt)
-		p.clean = maxf(0, p.clean - 0.15 * pressure * dt)
+		p.hunger = maxf(0, p.hunger - HUNGER_DRAIN * pressure * dt)
+		p.clean = maxf(CLEAN_FLOOR, p.clean - 0.15 * pressure * dt)
 		p.joy = maxf(0, p.joy - 0.20 * pressure * dt)
 		if p.sleeping:
 			p.energy = minf(100, p.energy + 8.0 * dt)
@@ -136,14 +138,6 @@ func feed() -> bool:
 	pets[selected].hunger = minf(100, pets[selected].hunger + 42)
 	notice = "%s сыт. −3 еды." % pets[selected].name
 	event.emit("feed")
-	return true
-
-func wash() -> bool:
-	if not can_care():
-		return false
-	pets[selected].clean = minf(100, pets[selected].clean + 45)
-	notice = "%s снова чист." % pets[selected].name
-	event.emit("wash")
 	return true
 
 func sleep_toggle() -> bool:

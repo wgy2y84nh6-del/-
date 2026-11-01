@@ -53,10 +53,7 @@ function check(ok, text) { assert.ok(ok, text); report.checks.push(text); consol
     await click(1410,220);
     s=await state();
     check(s.food===beforeFeed.food-3 && s.pets[0].hunger>beforeFeed.pets[0].hunger, 'feed button costs three and restores hunger');
-    const beforeWash=s.pets[0].clean;
-    await click(1410,296);
-    check((await state()).pets[0].clean>beforeWash, 'wash button restores clean');
-    await page.mouse.move(1410,374); await page.mouse.down(); await wait(550);
+    await page.mouse.move(1410,336); await page.mouse.down(); await wait(550);
     s=await state();
     check(s.petting && s.hearts===3, 'holding pet button shows exactly three hearts');
     await page.screenshot({path:path.join(out,'03-petting.png')});
@@ -119,12 +116,11 @@ function check(ok, text) { assert.ok(ok, text); report.checks.push(text); consol
         await click(86+i*108,660);
         let current=await state(), p=current.pets[i];
         if(p.hunger<72 && current.food>=3) await click(1410,220);
-        if(p.clean<72) await click(1410,296);
         if(p.energy<68 && !p.sleeping) await click(1410,450);
         if(p.energy>96 && p.sleeping) await click(1410,450);
         if(p.joy<70 && !p.sleeping) {
           await click(190,723);
-          await page.mouse.move(1410,374); await page.mouse.down();await wait(900);await page.mouse.up();
+          await page.mouse.move(1410,336); await page.mouse.down();await wait(900);await page.mouse.up();
         }
         if(i>0 && p.organ==='heart') {
           await click(1410,685);

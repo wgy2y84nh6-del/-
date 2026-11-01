@@ -21,15 +21,19 @@ func run_tests() -> void:
 	check(main.mode == "menu", "F5 main scene opens the menu")
 	check(main.buttons.play.alignment == HORIZONTAL_ALIGNMENT_CENTER, "Play button uses genuine horizontal centering")
 	check(main.buttons.play.size == Vector2(580, 86), "menu button follows reference rectangle")
+	check(not main.buttons.has("sound") and main.buttons.has("music"), "menu removes Sound and preserves Music")
+	check(main.buttons.settings.position.y == 391 and main.buttons.music.position.y == 532, "remaining menu buttons are evenly spaced")
 	main.start_or_resume()
 	await process_frame
 	check(main.world.size == Vector2(800, 450), "organ image has unchanged 16:9 aspect")
 	check(main.world.position == Vector2(410, 225), "world position is independent of text alignment")
 	check(main.labels.view.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and main.labels.view.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "organ heading is centered in both dimensions")
 	var centered := true
-	for key in ["feed", "wash", "pet", "sleep", "human", "heart", "brain", "gut", "restart"]:
+	for key in ["feed", "pet", "sleep", "human", "heart", "brain", "gut", "restart"]:
 		centered = centered and main.buttons[key].alignment == HORIZONTAL_ALIGNMENT_CENTER
 	check(centered, "all game-action and navigation button texts are centered")
+	check(not main.buttons.has("wash") and main.buttons.pet.text == "Гладить", "care removes Wash and pet label contains only Гладить")
+	check(main.buttons.pet.position == Vector2(1264, 305) and main.buttons.sleep.position == Vector2(1264, 421), "care buttons reflow without moving sleep or other panels")
 	for i in range(3):
 		main.state.pets[0].age = i * 0.55
 		main.refresh()

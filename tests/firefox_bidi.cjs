@@ -35,7 +35,7 @@ function check(value,title){assert.ok(value,title);report.checks.push(title);con
   for(let i=0;i<4;i++) for(const x of [160,430,710,980]) await click(x,835);
   check((await state()).elapsed>at+2,'Firefox repeated navigation does not freeze simulation');
   await click(430,835);
-  await command('input.performActions',{context,actions:[{type:'pointer',id:'mouse',parameters:{pointerType:'mouse'},actions:[{type:'pointerMove',x:1410,y:374,origin:'viewport'},{type:'pointerDown',button:0}]}]});
+  await command('input.performActions',{context,actions:[{type:'pointer',id:'mouse',parameters:{pointerType:'mouse'},actions:[{type:'pointerMove',x:1410,y:336,origin:'viewport'},{type:'pointerDown',button:0}]}]});
   await wait(450);check((await state()).petting && (await state()).hearts===3,'Firefox hold displays three hearts');
   await command('input.performActions',{context,actions:[{type:'pointer',id:'mouse',parameters:{pointerType:'mouse'},actions:[{type:'pointerUp',button:0}]}]});
   await wait(200);check(!(await state()).petting,'Firefox release removes hearts');

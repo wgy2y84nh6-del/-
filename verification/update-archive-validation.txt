@@ -1,0 +1,5 @@
+Updated source ZIP: CRC and safe paths OK; no nested downloads, .git, .godot or local saves.
+Clean Godot 4.6.3 import: exit 0; no errors/warnings.
+Clean main scene start: exit 0; no errors/warnings.
+Web ZIP runtime files byte-identical to the tested Web build.
+Final repack updates documentation, checksums and evidence only.

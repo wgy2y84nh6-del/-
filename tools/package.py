@@ -61,7 +61,7 @@ file:// зависит от политики браузера и в этой с�
     with zipfile.ZipFile(OUT / 'You-Are-My-Home-Godot.zip', 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for f in sorted(ROOT.rglob('*')):
             rel = f.relative_to(ROOT)
-            if any(p in {'.git', '.godot', '__pycache__', 'build', 'test-results'} for p in rel.parts):
+            if any(p in {'.git', '.godot', '__pycache__', 'build', 'test-results', 'downloads'} for p in rel.parts):
                 continue
             if f.is_file():
                 z.write(f, rel)

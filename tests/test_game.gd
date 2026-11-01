@@ -27,20 +27,28 @@ func run_tests() -> void:
 	for i in range(500):
 		s.set_view(["human", "heart", "brain", "gut"][i % 4])
 	check(not s.available_food.brain and s.available_food.gut and s.food == food + 1 and s.elapsed == 0, "500 navigations preserve inventory, slots and clocks")
-	s.tick(5.9)
+	s.tick(6.9)
 	check(not s.available_food.brain, "no early respawn")
 	s.tick(0.1)
-	check(s.available_food.brain, "respawn at next six-second cycle")
-	s.tick(18)
+	check(s.available_food.brain, "respawn at next seven-second cycle")
+	s.tick(21)
 	check(s.collect("gut") and not s.collect("gut"), "missed cycles do not stack food")
 	food = s.food
 	s.pets[0].hunger = 20
 	check(s.feed() and s.food == food - 3 and s.pets[0].hunger == 62, "feeding costs three and restores hunger")
 	s.food = 2
 	check(not s.feed() and s.food == 2, "insufficient food cannot be consumed")
-	s.pets[0].clean = 10
-	s.wash()
-	check(s.pets[0].clean == 55 and s.pets[0].hunger == 62, "wash changes cleanliness independently")
+	var clean_test = Model.new()
+	clean_test.pets[0].clean = 50.01
+	clean_test.tick(1)
+	check(clean_test.pets[0].clean == 50, "cleanliness stops at 50 percent without a wash action")
+	clean_test.pets[0].clean = 10
+	clean_test.tick(0.1)
+	check(clean_test.pets[0].clean == 50, "old low-cleanliness saves cannot soft-lock reproduction")
+	var drain_test = Model.new()
+	drain_test.tick(1)
+	check(absf(drain_test.pets[0].hunger - 84.44) < 0.0001, "base hunger drain is 0.56 points per second")
+	check(absf(drain_test.pets[0].clean - 84.85) < 0.0001 and absf(drain_test.pets[0].energy - 84.76) < 0.0001 and absf(drain_test.pets[0].joy - 84.8) < 0.0001, "other need decay rates remain unchanged")
 	s.set_view("heart")
 	s.pets[0].joy = 25
 	s.start_petting()
@@ -59,7 +67,7 @@ func run_tests() -> void:
 	s.paused = true
 	s.tick(90)
 	check(s.export_state() == before, "pause freezes all simulation clocks and needs")
-	check(not s.feed() and not s.wash() and not s.collect("brain"), "pause blocks gameplay mutation")
+	check(not s.feed() and not s.collect("brain"), "pause blocks gameplay mutation")
 	s.paused = false
 	var restored = Model.new()
 	check(restored.import_state(before) and restored.export_state() == before, "save roundtrip restores complete simulation")
@@ -132,8 +140,6 @@ func care(s: RefCounted) -> void:
 		s.select_pet(i)
 		if s.pets[i].hunger < 65 and s.food >= 3:
 			s.feed()
-		if s.pets[i].clean < 65:
-			s.wash()
 		if s.pets[i].energy < 65 and not s.pets[i].sleeping:
 			s.sleep_toggle()
 		if s.pets[i].energy > 95 and s.pets[i].sleeping:

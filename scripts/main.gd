@@ -112,7 +112,6 @@ func _input(event: InputEvent) -> void:
 		if mode == "game" and not is_instance_valid(overlay):
 			match event.keycode:
 				KEY_1: state.feed()
-				KEY_2: state.wash()
 				KEY_4: state.sleep_toggle()
 				KEY_SPACE: toggle_pause()
 				KEY_H: navigate("human")
@@ -272,9 +271,8 @@ func build_menu() -> void:
 	text_node("Ты мой дом", Rect2(456, 66, 688, 116), 63, true, true)
 	var have_save := not read_saved_text().is_empty()
 	button("play", "Продолжить" if have_save else "Играть", Rect2(510, 250, 580, 86), start_or_resume, true, null, 40)
-	button("settings", "Настройки", Rect2(510, 358, 580, 84), show_settings, false, null, 38)
-	button("sound", "Звук", Rect2(510, 462, 580, 84), show_settings, false, null, 38)
-	button("music", "Музыка", Rect2(510, 566, 580, 84), show_settings, false, null, 38)
+	button("settings", "Настройки", Rect2(510, 391, 580, 84), show_settings, false, null, 38)
+	button("music", "Музыка", Rect2(510, 532, 580, 84), show_settings, false, null, 38)
 	button("exit", "Выход", Rect2(510, 674, 580, 84), show_exit, false, null, 38)
 	text_node("ПАРАЗИТ-ТАМАГОЧИ", Rect2(510, 837, 580, 24), 13).modulate = MUTED
 
@@ -360,8 +358,7 @@ func build_game() -> void:
 	labels["timers"] = text_node("", Rect2(416, 725, 788, 27), 17)
 	text_node("ЗАБОТА", Rect2(1260, 122, 304, 45), 26, true, true)
 	button("feed", "Кормить", Rect2(1264, 190, 296, 62), func(): state.feed(), true, null, 28)
-	button("wash", "Мыть", Rect2(1264, 267, 296, 62), func(): state.wash(), false, null, 28)
-	var pet_button := button("pet", "Гладить · удерживай", Rect2(1264, 344, 296, 62), func(): pass, false, null, 21)
+	var pet_button := button("pet", "Гладить", Rect2(1264, 305, 296, 62), func(): pass, false, null, 21)
 	pet_button.button_down.connect(func():
 		audio.unlock()
 		state.start_petting())
@@ -410,7 +407,6 @@ func refresh() -> void:
 	buttons["sleep"].text = "Разбудить" if p.sleeping else "Спать"
 	buttons["pause"].text = "▶" if state.paused else "Ⅱ"
 	buttons["feed"].disabled = state.paused or not state.result.is_empty()
-	buttons["wash"].disabled = state.paused or not state.result.is_empty()
 	buttons["pet"].disabled = state.paused or not state.result.is_empty()
 	buttons["sleep"].disabled = state.paused or not state.result.is_empty()
 	buttons["move"].disabled = state.paused or p.id == 1 or p.organ != "heart" or not state.result.is_empty()
@@ -423,7 +419,7 @@ func refresh() -> void:
 	if state.view == "human":
 		labels["caption"].text = "Один организм. %d маленьких жильца." % state.pets.size()
 	elif state.view in ["brain", "gut"]:
-		labels["caption"].text = "Нажми на шарик: +1 еда" if state.available_food[state.view] else "Шарик собран · новый через %d с" % ceili(6.0 - state.food_clock)
+		labels["caption"].text = "Нажми на шарик: +1 еда" if state.available_food[state.view] else "Шарик собран · новый через %d с" % ceili(ParasiteGame.FOOD_CYCLE - state.food_clock)
 	else:
 		labels["caption"].text = "Пух откладывает яйца, когда все четыре потребности ≥ 50%."
 	var timers := ""
@@ -510,7 +506,7 @@ func add_slider(pos: Vector2, value: float, callback: Callable, parent: Control)
 
 func show_help() -> void:
 	var ui := make_overlay("Как обжиться внутри", 650)
-	var instructions := "Собирай по одному шарику в мозгу и кишечнике.\nНовый цикл — каждые 6 секунд. Кормление стоит 3 еды.\n\nВыбери питомца слева. Корми, мой и укладывай спать.\nУдерживай «Гладить» или самого питомца: появятся сердечки.\n\nПух откладывает яйцо раз в 50 секунд при потребностях ≥ 50%.\nЯйцо вылупляется за 20 секунд. Пересели Лилу в мозг,\nа Ростика — в кишечник кнопкой «Переселить».\n\nПосле третьего вылупления сохрани всех живыми ещё 40 секунд.\nГолод опаснее остальных потребностей.\n\n1 — кормить   2 — мыть   4 — сон   Пробел — пауза\nH — человек   Q / W / E — органы   Esc — закрыть окно\nПрогресс сохраняется автоматически, офлайн-время не считается."
+	var instructions := "Собирай по одному шарику в мозгу и кишечнике.\nНовый цикл — каждые 7 секунд. Кормление стоит 3 еды.\n\nВыбери питомца слева. Корми, гладь и укладывай спать.\nУдерживай «Гладить» или самого питомца: появятся сердечки.\n\nПух откладывает яйцо раз в 50 секунд при потребностях ≥ 50%.\nЯйцо вылупляется за 20 секунд. Пересели Лилу в мозг,\nа Ростика — в кишечник кнопкой «Переселить».\n\nПосле третьего вылупления сохрани всех живыми ещё 40 секунд.\nГолод опаснее остальных потребностей.\n\n1 — кормить   4 — сон   Пробел — пауза\nH — человек   Q / W / E — органы   Esc — закрыть окно\nПрогресс сохраняется автоматически, офлайн-время не считается."
 	text_node(instructions, Rect2(435, 230, 730, 390), 19, true, false, ui)
 	button("help_back", "Понятно", Rect2(600, 665, 400, 62), close_overlay, true, ui, 27)
 
