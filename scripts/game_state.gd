@@ -8,7 +8,7 @@ const EGG_INTERVAL := 50.0
 const HATCH_TIME := 20.0
 const FINAL_TIME := 40.0
 const FOOD_CYCLE := 7.0
-const HUNGER_DRAIN := 0.784
+const HUNGER_DRAIN := 1.372
 const JUNIOR_HUNGER_MULTIPLIER := 1.30
 const MAX_PARASITES := 3
 const SAVE_VERSION := 2
@@ -88,16 +88,16 @@ func advance(dt: float) -> void:
 		p.age += dt
 		var hunger_multiplier := 1.0 if p.id == 1 else JUNIOR_HUNGER_MULTIPLIER
 		p.hunger = maxf(0, p.hunger - HUNGER_DRAIN * pressure * hunger_multiplier * dt)
-		p.joy = maxf(0, p.joy - 0.20 * pressure * dt)
+		p.joy = maxf(0, p.joy - 0.35 * pressure * dt)
 		if p.sleeping:
 			p.energy = minf(100, p.energy + 8.0 * dt)
 		else:
-			p.energy = maxf(0, p.energy - 0.24 * pressure * dt)
+			p.energy = maxf(0, p.energy - 0.42 * pressure * dt)
 		if petting and i == selected and p.organ == view and not p.sleeping:
 			p.joy = minf(100, p.joy + 18.0 * dt)
 		var damage := 0.0
 		if p.hunger <= 0:
-			damage += 6.0
+			damage += 10.5
 		if p.energy <= 0:
 			damage += 0.5
 		if p.joy <= 0:
