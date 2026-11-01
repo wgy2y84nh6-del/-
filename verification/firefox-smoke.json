@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Firefox loads WASM and renders main menu",
+    "Firefox starts a new game",
+    "Firefox navigation opens brain",
+    "Firefox food collection adds one and clears slot",
+    "Firefox rejects duplicate collection",
+    "Firefox repeated navigation does not freeze simulation",
+    "Firefox hold displays three hearts",
+    "Firefox release removes hearts",
+    "Firefox sleep restores energy",
+    "Firefox pause freezes simulation",
+    "Firefox restores browser save after reload",
+    "Firefox has no game JavaScript or Godot errors"
+  ],
+  "errors": [],
+  "browser": {
+    "type": "string",
+    "value": "Mozilla/5.0 (X11; Linux x86_64; rv:153.0) Gecko/20100101 Firefox/153.0"
+  }
+}

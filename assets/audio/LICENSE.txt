@@ -1,0 +1,8 @@
+Original synthetic music and sound effects created for «Ты мой дом».
+No recordings, external samples, organ sounds, heartbeat or breathing are used.
+
+To the extent possible under law, the authors dedicate these generated audio
+assets and their generator tools/make_audio.py to the public domain under CC0 1.0.
+You may use, modify, distribute and sell them as part of this game or separately.
+https://creativecommons.org/publicdomain/zero/1.0/
+
