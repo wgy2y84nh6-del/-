@@ -1,0 +1,9 @@
+FINAL REBIRTH UPDATE ARCHIVE VALIDATION
+
+Source and Web ZIPs extracted with successful CRC and path checks.
+Clean source import in Godot 4.6.3: exit 0, no errors or warnings.
+Clean main-scene startup: exit 0, no errors or warnings.
+Extracted Web ZIP served on port 8770 and tested in Google Chrome:
+18/18 touch, food, hearts, audio, pause, resize and save checks; no errors.
+All runtime files in the ZIP match the actual tested Web build byte-for-byte.
+Final repack only updates documentation, evidence and checksum manifests.

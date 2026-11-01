@@ -1,0 +1,232 @@
+{
+  "checks": [
+    "WASM loads and main menu renders",
+    "game starts with one resident in heart",
+    "awake animation alternates two frames in browser",
+    "food disappears and adds exactly +1 in brain",
+    "repeated click cannot collect same food",
+    "unclicked gut food survives navigation",
+    "gut food also adds exactly +1",
+    "feed button costs three and restores hunger",
+    "holding pet button shows exactly three hearts",
+    "release immediately removes hearts",
+    "direct resident press starts petting",
+    "release outside resident also stops hearts",
+    "sleep button restores energy and alternates sleep frames",
+    "sleep continues on human screen",
+    "resident can be awakened from another screen",
+    "pause freezes game timers",
+    "24 repeated navigations keep simulation active and resident anchored",
+    "touch navigation opens brain",
+    "touch collects food exactly once",
+    "resize preserves running state",
+    "resident 2 relocates manually to correct organ",
+    "resident 2 occupies reference anchor after relocation",
+    "resident 3 relocates manually to correct organ",
+    "resident 3 occupies reference anchor after relocation",
+    "full browser playthrough reaches good ending with all three alive",
+    "browser final timer runs for actual forty simulation seconds",
+    "all three residents remain in assigned homes at ending",
+    "no extra egg or fourth resident",
+    "stage-three music is playing at ending",
+    "browser save survives page reload",
+    "no browser JavaScript/Godot errors during full playthrough"
+  ],
+  "errors": [],
+  "events": [
+    {
+      "kind": "hatch",
+      "count": 2,
+      "at": 71.1260777777781,
+      "final": -1
+    },
+    {
+      "kind": "hatch",
+      "count": 3,
+      "at": 123.840040740741,
+      "final": 36.2826925925926
+    }
+  ],
+  "finalDuration": 40.06395555555639,
+  "finishedAt": 160.18668888889,
+  "restoredState": {
+    "available_food": {
+      "brain": false,
+      "gut": false
+    },
+    "effects_volume": 0.65,
+    "egg_left": -1,
+    "elapsed": 160.18668888889,
+    "final_left": 0,
+    "food": 26,
+    "food_clock": 6.18690888888884,
+    "hearts": 0,
+    "mode": "game",
+    "music_playing": true,
+    "music_stage": 3,
+    "music_volume": 0.45,
+    "notice": "Человек умер. Все трое живы — теперь это ваш дом.",
+    "overlay": true,
+    "paused": true,
+    "pets": [
+      {
+        "age": 160.18668888889,
+        "alive": true,
+        "clean": 56.675558,
+        "energy": 92.3191244799999,
+        "health": 100,
+        "hunger": 86.68625536,
+        "id": 1,
+        "joy": 81.6267706666668,
+        "name": "Пух",
+        "organ": "heart",
+        "sleeping": false
+      },
+      {
+        "age": 90.1311555555556,
+        "alive": true,
+        "clean": 67.1838880000001,
+        "energy": 90.9471615999999,
+        "health": 100,
+        "hunger": 78.7314688,
+        "id": 2,
+        "joy": 77.5423839999994,
+        "name": "Лилу",
+        "organ": "brain",
+        "sleeping": false
+      },
+      {
+        "age": 40.0639555555556,
+        "alive": true,
+        "clean": 76.3461855999997,
+        "energy": 71.1538969599998,
+        "health": 100,
+        "hunger": 83.69099904,
+        "id": 3,
+        "joy": 73.4615807999999,
+        "name": "Ростик",
+        "organ": "gut",
+        "sleeping": false
+      }
+    ],
+    "petting": false,
+    "placements": [
+      {
+        "frame": 1,
+        "id": 1,
+        "organ": "heart",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 0,
+        "id": 2,
+        "organ": "brain",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 1,
+        "id": 3,
+        "organ": "gut",
+        "x": 112,
+        "y": 78
+      }
+    ],
+    "reproduction_clock": 19.9753,
+    "result": "win",
+    "selected": 2,
+    "version": 1,
+    "view": "gut"
+  },
+  "lastState": {
+    "available_food": {
+      "brain": false,
+      "gut": false
+    },
+    "effects_volume": 0.65,
+    "egg_left": -1,
+    "elapsed": 160.18668888889,
+    "final_left": 0,
+    "food": 26,
+    "food_clock": 6.18690888888884,
+    "hearts": 0,
+    "mode": "game",
+    "music_playing": true,
+    "music_stage": 3,
+    "music_volume": 0.45,
+    "notice": "Человек умер. Все трое живы — теперь это ваш дом.",
+    "overlay": true,
+    "paused": true,
+    "pets": [
+      {
+        "age": 160.18668888889,
+        "alive": true,
+        "clean": 56.675558,
+        "energy": 92.3191244799999,
+        "health": 100,
+        "hunger": 86.68625536,
+        "id": 1,
+        "joy": 81.6267706666668,
+        "name": "Пух",
+        "organ": "heart",
+        "sleeping": false
+      },
+      {
+        "age": 90.1311555555556,
+        "alive": true,
+        "clean": 67.1838880000001,
+        "energy": 90.9471615999999,
+        "health": 100,
+        "hunger": 78.7314688,
+        "id": 2,
+        "joy": 77.5423839999994,
+        "name": "Лилу",
+        "organ": "brain",
+        "sleeping": false
+      },
+      {
+        "age": 40.0639555555556,
+        "alive": true,
+        "clean": 76.3461855999997,
+        "energy": 71.1538969599998,
+        "health": 100,
+        "hunger": 83.69099904,
+        "id": 3,
+        "joy": 73.4615807999999,
+        "name": "Ростик",
+        "organ": "gut",
+        "sleeping": false
+      }
+    ],
+    "petting": false,
+    "placements": [
+      {
+        "frame": 1,
+        "id": 1,
+        "organ": "heart",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 0,
+        "id": 2,
+        "organ": "brain",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 1,
+        "id": 3,
+        "organ": "gut",
+        "x": 112,
+        "y": 78
+      }
+    ],
+    "reproduction_clock": 19.9753,
+    "result": "win",
+    "selected": 2,
+    "version": 1,
+    "view": "gut"
+  }
+}

@@ -1,0 +1,91 @@
+const {chromium}=require('playwright');
+const fs=require('fs'),path=require('path'),assert=require('node:assert/strict');
+const out=process.env.HOME_TEST_OUTPUT||'/tmp/home-smoke';fs.mkdirSync(out,{recursive:true});
+const report={checks:[],errors:[],audio:{}};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function check(ok,title){assert.ok(ok,title);report.checks.push(title);console.log('PASS:',title);}
+(async()=>{
+ const browser=await chromium.launch({executablePath:process.env.HOME_TEST_BROWSER_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ report.browser=await browser.version();
+ const context=await browser.newContext({viewport:{width:1600,height:900},hasTouch:true,deviceScaleFactor:1});
+ await context.addInitScript(()=>{
+  const Native=window.AudioContext||window.webkitAudioContext;
+  const originalConnect=AudioNode.prototype.connect;
+  AudioNode.prototype.connect=function(dest,...args){
+   if(dest===this.context.destination && this.context.__meter && this!==this.context.__meter) return originalConnect.call(this,this.context.__meter,...args);
+   return originalConnect.call(this,dest,...args);
+  };
+  window.AudioContext=new Proxy(Native,{construct(Target,args){
+   const ctx=Reflect.construct(Target,args);const meter=ctx.createAnalyser();meter.fftSize=2048;ctx.__meter=meter;
+   originalConnect.call(meter,ctx.destination);window.__audioContext=ctx;
+   return ctx;
+  }});
+  window.__audioRms=()=>{const ctx=window.__audioContext;if(!ctx)return null;const b=new Float32Array(ctx.__meter.fftSize);ctx.__meter.getFloatTimeDomainData(b);return Math.sqrt(b.reduce((s,x)=>s+x*x,0)/b.length)};
+ });
+ const page=await context.newPage();
+ page.on('pageerror',e=>report.errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')report.errors.push(m.text())});
+ const state=()=>page.evaluate(()=>structuredClone(window.__homeState));
+ const click=async(x,y)=>{await page.mouse.click(x,y);await wait(200)};
+ try{
+  await page.goto(process.env.HOME_TEST_URL||'http://127.0.0.1:8765/');
+  await page.waitForFunction(()=>window.__homeState?.mode==='menu',null,{timeout:90000});
+  await page.screenshot({path:path.join(out,'menu.png')});
+  check(true,'browser carrier loads Godot and renders menu');
+  await click(800,290);await page.waitForFunction(()=>window.__homeState?.mode==='game');
+  await wait(1000);
+  report.audio.initialRms=await page.evaluate(()=>window.__audioRms());
+  check(await page.evaluate(()=>window.__audioContext?.state==='running') && report.audio.initialRms>0.00001,'real user gesture starts audible Web Audio output');
+  await page.screenshot({path:path.join(out,'heart.png')});
+  await page.touchscreen.tap(710,835);await wait(200);let s=await state();
+  check(s.view==='brain','touch navigation works');let food=s.food;
+  await page.touchscreen.tap(1115,340);await wait(200);s=await state();
+  check(s.food===food+1 && !s.available_food.brain,'touch collects one food and removes it');
+  await page.touchscreen.tap(1115,340);await wait(200);check((await state()).food===food+1,'touch cannot collect food twice');
+  await click(430,835);
+  const cdp=await context.newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:1410,y:336}]});await wait(400);
+  check((await state()).petting && (await state()).hearts===3,'held touch shows three hearts');
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await wait(150);
+  check(!(await state()).petting && (await state()).hearts===0,'touch release removes hearts');
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:1410,y:336}]});await wait(200);
+  await page.keyboard.press('h');await wait(200);
+  check(!(await state()).petting && (await state()).view==='human','screen switch during touch cancels hearts');
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  await click(1100,47);
+  await click(525,399);await page.keyboard.press('Home');await wait(200);
+  check((await state()).music_volume===0 && (await state()).effects_volume>0,'music slider is independent of effects slider');
+  await click(525,510);await page.keyboard.press('Home');await wait(200);
+  check((await state()).effects_volume===0,'effects slider can mute effects');
+  await click(800,625);await wait(800);
+  report.audio.mutedRms=await page.evaluate(()=>window.__audioRms());
+  check(report.audio.mutedRms<0.0001,'both zero sliders produce silence in actual Web Audio graph');
+  await click(1100,47);
+  await click(525,399);await page.keyboard.press('End');
+  await click(525,510);await page.keyboard.press('End');
+  await click(800,625);await wait(1500);
+  report.audio.restoredRms=await page.evaluate(()=>window.__audioRms());
+  check(report.audio.restoredRms>0.0001,'restoring music volume restores real audio output');
+  await click(860,47);const stopped=(await state()).elapsed;
+  // Fourteen seconds exceeds a full 12-second loop, without further clicks.
+  await wait(14000);s=await state();
+  report.audio.afterLoopRms=await page.evaluate(()=>window.__audioRms());
+  check(s.paused && Math.abs(s.elapsed-stopped)<0.01,'pause remains stable across a music loop');
+  check(s.music_playing && report.audio.afterLoopRms>0.0001,'music loops with measurable output after twelve seconds');
+  await click(860,47);
+  await page.setViewportSize({width:900,height:1600});
+  await page.waitForFunction(()=>document.querySelector('canvas').width===900 && document.querySelector('canvas').height===1600);
+  await wait(1000);
+  await page.touchscreen.tap(551,1017);await wait(500);
+  await page.screenshot({path:path.join(out,'portrait-viewport.png')});
+  report.portraitState=await state();
+  check((await state()).view==='gut','portrait viewport preserves proportions and touch coordinates');
+  await page.setViewportSize({width:1600,height:900});await wait(250);
+  const saved=await state();await wait(2500);
+  await page.reload();await page.waitForFunction(()=>window.__homeState?.mode==='menu',null,{timeout:90000});
+  await click(800,290);await page.waitForFunction(()=>window.__homeState?.mode==='game');s=await state();
+  report.beforeReload=saved;report.afterReload=s;
+  check(s.food===saved.food && s.elapsed>=saved.elapsed && s.elapsed<saved.elapsed+5,'reload restores state without counting time spent loading');
+  check(s.music_volume===1 && s.effects_volume===1,'independent audio settings persist after reload');
+  check(report.errors.length===0,'no browser resource, JavaScript or Godot errors');
+ } finally {fs.writeFileSync(path.join(out,'smoke-report.json'),JSON.stringify(report,null,2));await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1});

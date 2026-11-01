@@ -1,0 +1,16 @@
+FINAL ARCHIVE VALIDATION — 2026-11-01
+
+Both ZIP archives extracted without CRC or path errors.
+Source archive contains project.godot, scenes/Main.tscn, all scripts,
+24 unchanged original PNGs, fonts, audio and export presets.
+No .git history, .godot cache, test browser profiles or local saves packaged.
+
+Clean source directory: /workspace/verify-home/source
+Godot 4.6.3 --headless --editor --import --quit: exit 0, no errors/warnings.
+Godot 4.6.3 --headless --quit-after 5: exit 0, main scene started cleanly.
+
+Web archive: all exported runtime files matched the tested build byte-for-byte.
+Extracted Web ZIP served by its included serve.py on port 8767.
+Google Chrome 156 functional smoke: 18/18, no JS/resource/Godot errors.
+The final repack only updates documentation/evidence and removes an unused
+editor-generated .import file; runtime WASM, JavaScript, PCK and HTML unchanged.

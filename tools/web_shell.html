@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#25182f">
+<link rel="icon" href="data:,">
+<title>Ты мой дом · Паразит-тамагочи</title>
+$GODOT_HEAD_INCLUDE
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#1a1022;color:#ffe0cd;font-family:system-ui,sans-serif}
+#canvas{display:block;width:100%;height:100%;outline:0;image-rendering:pixelated;touch-action:none}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:#25182f;text-align:center;padding:24px;z-index:2}
+h1{font-family:Georgia,serif;font-size:clamp(30px,5vw,64px);color:#ffe0cd;margin:0;text-shadow:0 0 24px #d772aa}
+progress{width:min(420px,80vw);height:12px;accent-color:#ef9abf}
+#error{display:none;max-width:720px;white-space:pre-wrap;line-height:1.6;color:#ffc9d7}
+#hint{font-size:15px;color:#c9a2bc}
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="0" aria-label="Ты мой дом. Игра. Управление: мышь, касания, H и Q W E — экраны, 1 и 2 — уход, 4 — сон, пробел — пауза.">Для игры нужен браузер с WebAssembly и WebGL 2.</canvas>
+<div id="loading"><h1>Ты мой дом</h1><p id="hint">Маленький мир внутри тебя</p><progress id="progress"></progress><p id="error"></p></div>
+<script src="$GODOT_URL"></script>
+<script>
+const GODOT_CONFIG = $GODOT_CONFIG;
+const engine = new Engine(GODOT_CONFIG);
+const loading=document.querySelector('#loading'), progress=document.querySelector('#progress');
+function fail(error){progress.style.display='none';document.querySelector('#hint').textContent='Не удалось открыть дом';const e=document.querySelector('#error');e.style.display='block';e.textContent='Откройте игру через HTTP(S)-сервер, а не двойным щелчком по HTML. Нужны WebAssembly и WebGL 2.\n\n'+String(error);console.error(error)}
+engine.startGame({canvas:document.querySelector('#canvas'),onProgress:(current,total)=>{if(total>0){progress.max=total;progress.value=current}}}).then(()=>{loading.style.display='none';document.querySelector('#canvas').focus()}).catch(fail);
+// An audio context may resume only after a real user gesture (including Safari).
+function resumeAudio(){try{if(typeof GodotAudio!=='undefined' && GodotAudio.ctx && GodotAudio.ctx.state==='suspended') GodotAudio.ctx.resume()}catch(e){}}
+document.addEventListener('pointerdown',resumeAudio,{passive:true});
+document.addEventListener('keydown',resumeAudio,{passive:true});
+document.addEventListener('contextmenu',event=>event.preventDefault());
+</script>
+</body>
+</html>

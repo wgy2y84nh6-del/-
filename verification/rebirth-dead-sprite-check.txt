@@ -1,0 +1,1 @@
+Dead brain screenshot compared with original 320x180 background: 100.000000% pixels match. No dead sprite or animation remains.
