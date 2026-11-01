@@ -63,7 +63,7 @@ func _process(dt: float) -> void:
 	clock += dt
 	if mode == "game":
 		state.tick(dt)
-		audio.set_stage(state.pets.size())
+		audio.set_stage(state.live_count())
 		refresh()
 		if latest_result != state.result and not state.result.is_empty():
 			latest_result = state.result
@@ -88,6 +88,8 @@ func _process(dt: float) -> void:
 		observation["effects_volume"] = audio.effects_volume
 		var placements: Array = []
 		for p in state.pets:
+			if not p.alive:
+				continue
 			var a := art.anchor(p)
 			placements.append({"id": p.id, "organ": p.organ, "x": a.x, "y": a.y, "frame": art.frame(p)})
 		observation["placements"] = placements
@@ -134,8 +136,8 @@ func stop_petting() -> void:
 		world.queue_redraw()
 
 func _on_event(kind: String) -> void:
-	audio.effect(kind)
-	if kind in ["egg", "hatch", "move", "win", "loss"]:
+	audio.effect("loss" if kind == "death" else kind)
+	if kind in ["egg", "hatch", "move", "win", "loss", "death"]:
 		save_game()
 	if kind == "hatch":
 		refresh()
@@ -269,8 +271,7 @@ func build_menu() -> void:
 	state.paused = true
 	clear_content()
 	text_node("Ты мой дом", Rect2(456, 66, 688, 116), 63, true, true)
-	var have_save := not read_saved_text().is_empty()
-	button("play", "Продолжить" if have_save else "Играть", Rect2(510, 250, 580, 86), start_or_resume, true, null, 40)
+	button("play", "Играть", Rect2(510, 250, 580, 86), start_or_resume, true, null, 40)
 	button("settings", "Настройки", Rect2(510, 391, 580, 84), show_settings, false, null, 38)
 	button("music", "Музыка", Rect2(510, 532, 580, 84), show_settings, false, null, 38)
 	button("exit", "Выход", Rect2(510, 674, 580, 84), show_exit, false, null, 38)
@@ -296,7 +297,6 @@ func build_game() -> void:
 	text_node("Ты мой дом", Rect2(36, 12, 365, 65), 37, true, true)
 	labels["view"] = text_node("СЕРДЦЕ", Rect2(410, 14, 330, 62), 31, true, true)
 	button("pause", "Ⅱ", Rect2(818, 24, 82, 46), toggle_pause, false, null, 26)
-	text_node("×1", Rect2(917, 24, 57, 46), 24)
 	button("help", "?", Rect2(994, 24, 58, 46), show_help, false, null, 26)
 	button("audio", "♪", Rect2(1071, 24, 58, 46), show_settings, false, null, 27)
 	labels["human"] = text_node("ЧЕЛОВЕК · СТАДИЯ 1", Rect2(1185, 13, 370, 30), 18)
@@ -317,10 +317,10 @@ func build_game() -> void:
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	content.add_child(portrait)
 	labels["home"] = text_node("Дома в сердце", Rect2(55, 309, 280, 26), 15)
-	var stat_names := ["Сытость", "Чистота", "Энергия", "Довольство", "Здоровье"]
-	var stat_keys := ["hunger", "clean", "energy", "joy", "health"]
-	var colors := ["f6a0af", "b7d78d", "bdace7", "ffd17e", "ff87ab"]
-	for i in range(5):
+	var stat_names := ["Сытость", "Энергия", "Довольство", "Здоровье"]
+	var stat_keys := ["hunger", "energy", "joy", "health"]
+	var colors := ["f6a0af", "bdace7", "ffd17e", "ff87ab"]
+	for i in range(4):
 		var y := 340 + i * 43
 		text_node(stat_names[i], Rect2(69, y, 206, 23), 18, false)
 		labels[stat_keys[i]] = text_node("85%", Rect2(294, y, 60, 23), 18)
@@ -383,18 +383,20 @@ func build_game() -> void:
 func refresh() -> void:
 	if mode != "game" or labels.is_empty():
 		return
+	if not state.pets[state.selected].alive:
+		state.selected = 0
 	var p: Dictionary = state.pets[state.selected]
 	labels["name"].text = p.name
 	labels["view"].text = ORGAN_NAMES[state.view]
 	labels["home"].text = ("Сладко спит · " if p.sleeping else "Дома · ") + ORGAN_NAMES[p.organ].to_lower()
 	labels["notice"].text = state.notice
 	labels["food"].text = "Еда · %d" % state.food
-	labels["count"].text = "Паразитов · %d / 3" % state.pets.size()
-	labels["human"].text = "ЧЕЛОВЕК · СТАДИЯ %d" % state.pets.size()
-	bars["human"].value = 100 - (state.pets.size() - 1) * 32
+	labels["count"].text = "Паразитов · %d / 3" % state.live_count()
+	labels["human"].text = "ЧЕЛОВЕК · СТАДИЯ %d" % maxi(1, state.live_count())
+	bars["human"].value = 100 - (maxi(1, state.live_count()) - 1) * 32
 	if state.final_left >= 0:
 		bars["human"].value = 36 * state.final_left / 40.0
-	for key in ["hunger", "clean", "energy", "joy", "health"]:
+	for key in ["hunger", "energy", "joy", "health"]:
 		bars[key].value = p[key]
 		labels[key].text = "%d%%" % ceili(p[key])
 	var f := art.frame(p)
@@ -402,7 +404,7 @@ func refresh() -> void:
 	portrait.position = Vector2(129, 188) + art.frame_offset(p, f) * 1.45
 	portrait.size = Vector2(96, 96) * 1.45
 	for i in range(3):
-		family[i].disabled = i >= state.pets.size()
+		family[i].disabled = i >= state.pets.size() or not state.pets[i].alive
 		family[i].modulate = Color.WHITE if i == state.selected else Color("baa2b7")
 	buttons["sleep"].text = "Разбудить" if p.sleeping else "Спать"
 	buttons["pause"].text = "▶" if state.paused else "Ⅱ"
@@ -417,15 +419,15 @@ func refresh() -> void:
 	for key in ["human", "heart", "brain", "gut"]:
 		buttons[key].modulate = Color("ffbad5") if state.view == key else Color.WHITE
 	if state.view == "human":
-		labels["caption"].text = "Один организм. %d маленьких жильца." % state.pets.size()
+		labels["caption"].text = "Один организм. %d маленьких жильца." % state.live_count()
 	elif state.view in ["brain", "gut"]:
-		labels["caption"].text = "Нажми на шарик: +1 еда" if state.available_food[state.view] else "Шарик собран · новый через %d с" % ceili(ParasiteGame.FOOD_CYCLE - state.food_clock)
+		labels["caption"].text = "Нажми на шарик: +1 еда" if state.available_food[state.view] else "Шарик собран · новый через %d с" % ceili(state.food_remaining(state.view))
 	else:
-		labels["caption"].text = "Пух откладывает яйца, когда все четыре потребности ≥ 50%."
+		labels["caption"].text = "Пух откладывает яйца только при сытости строго выше 70%."
 	var timers := ""
 	if state.egg_left >= 0:
 		timers += "Вылупление · %d с" % ceili(state.egg_left)
-	elif state.pets.size() < 3:
+	elif state.live_count() < 3:
 		timers += "До яйца · %d с" % ceili(50.0 - state.reproduction_clock)
 	else:
 		timers += "Семья в сборе"
@@ -506,7 +508,7 @@ func add_slider(pos: Vector2, value: float, callback: Callable, parent: Control)
 
 func show_help() -> void:
 	var ui := make_overlay("Как обжиться внутри", 650)
-	var instructions := "Собирай по одному шарику в мозгу и кишечнике.\nНовый цикл — каждые 7 секунд. Кормление стоит 3 еды.\n\nВыбери питомца слева. Корми, гладь и укладывай спать.\nУдерживай «Гладить» или самого питомца: появятся сердечки.\n\nПух откладывает яйцо раз в 50 секунд при потребностях ≥ 50%.\nЯйцо вылупляется за 20 секунд. Пересели Лилу в мозг,\nа Ростика — в кишечник кнопкой «Переселить».\n\nПосле третьего вылупления сохрани всех живыми ещё 40 секунд.\nГолод опаснее остальных потребностей.\n\n1 — кормить   4 — сон   Пробел — пауза\nH — человек   Q / W / E — органы   Esc — закрыть окно\nПрогресс сохраняется автоматически, офлайн-время не считается."
+	var instructions := "Собирай по одному шарику в мозгу и кишечнике.\nНовый цикл — каждые 7 секунд. Кормление стоит 3 еды.\n\nВыбери питомца слева. Корми, гладь и укладывай спать.\nУдерживай «Гладить» или самого питомца: появятся сердечки.\n\nПух откладывает яйцо раз в 50 секунд при сытости > 70%.\nЯйцо вылупляется за 20 секунд. Пересели Лилу в мозг,\nа Ростика — в кишечник кнопкой «Переселить».\n\nТри живых питомца запускают финал на 40 секунд.\nМладшие голодают быстрее. Пух может вырастить им замену.\n\n1 — кормить   4 — сон   Пробел — пауза\nH — человек   Q / W / E — органы   Esc — закрыть окно\nПрогресс сохраняется автоматически, офлайн-время не считается."
 	text_node(instructions, Rect2(435, 230, 730, 390), 19, true, false, ui)
 	button("help_back", "Понятно", Rect2(600, 665, 400, 62), close_overlay, true, ui, 27)
 

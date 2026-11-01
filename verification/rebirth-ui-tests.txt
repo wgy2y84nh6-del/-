@@ -1,0 +1,32 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: F5 main scene opens the menu
+PASS: Play button uses genuine horizontal centering
+PASS: menu button follows reference rectangle
+PASS: menu always says Играть even when a save exists
+PASS: menu removes Sound and preserves Music
+PASS: remaining menu buttons are evenly spaced
+PASS: exactly four pet meters remain, including health, plus human meter
+PASS: speed display is absent and simulation speed stays one
+PASS: organ image has unchanged 16:9 aspect
+PASS: world position is independent of text alignment
+PASS: organ heading is centered in both dimensions
+PASS: all game-action and navigation button texts are centered
+PASS: care removes Wash and pet label contains only Гладить
+PASS: care buttons reflow without moving sleep or other panels
+PASS: portrait does not overlap the name, phase 0
+PASS: portrait does not overlap the name, phase 1
+PASS: portrait does not overlap the name, phase 2
+PASS: stat bars fit between their labels
+PASS: navigation immediately clears hearts
+PASS: care, family and navigation stay in place on every screen
+PASS: settings pauses gameplay
+PASS: closing settings resumes an active game
+PASS: closing help preserves a pre-existing pause
+PASS: three music themes are imported as continuous loops
+PASS: dead junior disables its selector without an ending overlay
+PASS: count and human stage follow live residents
+PASS: dead junior has no interactive sprite hitbox
+PASS: starvation opens actual bad-ending UI
+PASS: restart fully restores the playable initial state
+RESULT: 29 UI checks, 0 failures

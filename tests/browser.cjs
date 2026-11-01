@@ -115,7 +115,7 @@ function check(ok, text) { assert.ok(ok, text); report.checks.push(text); consol
       for(let i=0;i<s.pets.length;i++) {
         await click(86+i*108,660);
         let current=await state(), p=current.pets[i];
-        if(p.hunger<72 && current.food>=3) await click(1410,220);
+        if(p.hunger<78 && current.food>=3) await click(1410,220);
         if(p.energy<68 && !p.sleeping) await click(1410,450);
         if(p.energy>96 && p.sleeping) await click(1410,450);
         if(p.joy<70 && !p.sleeping) {

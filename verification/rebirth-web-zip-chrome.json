@@ -1,0 +1,192 @@
+{
+  "checks": [
+    "browser carrier loads Godot and renders menu",
+    "real user gesture starts audible Web Audio output",
+    "touch navigation works",
+    "touch collects one food and removes it",
+    "touch cannot collect food twice",
+    "held touch shows three hearts",
+    "touch release removes hearts",
+    "screen switch during touch cancels hearts",
+    "music slider is independent of effects slider",
+    "effects slider can mute effects",
+    "both zero sliders produce silence in actual Web Audio graph",
+    "restoring music volume restores real audio output",
+    "pause remains stable across a music loop",
+    "music loops with measurable output after twelve seconds",
+    "portrait viewport preserves proportions and touch coordinates",
+    "reload restores state without counting time spent loading",
+    "independent audio settings persist after reload",
+    "no browser resource, JavaScript or Godot errors"
+  ],
+  "errors": [],
+  "audio": {
+    "initialRms": 0.016707931619837295,
+    "mutedRms": 0.000020061749118300032,
+    "restoredRms": 0.06499795067990671,
+    "afterLoopRms": 0.07609262819499661
+  },
+  "browser": "156.0.8078.79",
+  "portraitState": {
+    "available_food": {
+      "brain": true,
+      "gut": true
+    },
+    "effects_volume": 1,
+    "egg_left": -1,
+    "egg_slot": 0,
+    "elapsed": 12.0935666666667,
+    "final_left": -1,
+    "food": 7,
+    "food_cooldowns": {
+      "brain": 0,
+      "gut": 0
+    },
+    "hearts": 0,
+    "live_count": 1,
+    "mode": "game",
+    "music_playing": true,
+    "music_stage": 1,
+    "music_volume": 1,
+    "notice": "+1 еда. Для одного кормления нужно 3.",
+    "overlay": false,
+    "paused": false,
+    "pets": [
+      {
+        "age": 12.0935666666667,
+        "alive": true,
+        "energy": 82.0975440000001,
+        "health": 100,
+        "hunger": 78.2276026666666,
+        "id": 1,
+        "joy": 98.73454,
+        "name": "Пух",
+        "organ": "heart",
+        "sleeping": false
+      }
+    ],
+    "petting": false,
+    "placements": [
+      {
+        "frame": 1,
+        "id": 1,
+        "organ": "heart",
+        "x": 112,
+        "y": 42
+      }
+    ],
+    "reproduction_clock": 12.0935666666667,
+    "result": "",
+    "selected": 0,
+    "version": 2,
+    "view": "gut"
+  },
+  "beforeReload": {
+    "available_food": {
+      "brain": true,
+      "gut": true
+    },
+    "effects_volume": 1,
+    "egg_left": -1,
+    "egg_slot": 0,
+    "elapsed": 12.4434666666667,
+    "final_left": -1,
+    "food": 7,
+    "food_cooldowns": {
+      "brain": 0,
+      "gut": 0
+    },
+    "hearts": 0,
+    "live_count": 1,
+    "mode": "game",
+    "music_playing": true,
+    "music_stage": 1,
+    "music_volume": 1,
+    "notice": "+1 еда. Для одного кормления нужно 3.",
+    "overlay": false,
+    "paused": false,
+    "pets": [
+      {
+        "age": 12.4434666666667,
+        "alive": true,
+        "energy": 82.013568,
+        "health": 100,
+        "hunger": 78.0316586666666,
+        "id": 1,
+        "joy": 98.66456,
+        "name": "Пух",
+        "organ": "heart",
+        "sleeping": false
+      }
+    ],
+    "petting": false,
+    "placements": [
+      {
+        "frame": 0,
+        "id": 1,
+        "organ": "heart",
+        "x": 112,
+        "y": 42
+      }
+    ],
+    "reproduction_clock": 12.4434666666667,
+    "result": "",
+    "selected": 0,
+    "version": 2,
+    "view": "gut"
+  },
+  "afterReload": {
+    "available_food": {
+      "brain": true,
+      "gut": true
+    },
+    "effects_volume": 1,
+    "egg_left": -1,
+    "egg_slot": 0,
+    "elapsed": 13.3341333333333,
+    "final_left": -1,
+    "food": 7,
+    "food_cooldowns": {
+      "brain": 0,
+      "gut": 0
+    },
+    "hearts": 0,
+    "live_count": 1,
+    "mode": "game",
+    "music_playing": true,
+    "music_stage": 1,
+    "music_volume": 1,
+    "notice": "+1 еда. Для одного кормления нужно 3.",
+    "overlay": false,
+    "paused": false,
+    "pets": [
+      {
+        "age": 13.3341333333333,
+        "alive": true,
+        "energy": 81.7998080000001,
+        "health": 100,
+        "hunger": 77.5328853333332,
+        "id": 1,
+        "joy": 98.4864266666667,
+        "name": "Пух",
+        "organ": "heart",
+        "sleeping": false
+      }
+    ],
+    "petting": false,
+    "placements": [
+      {
+        "frame": 0,
+        "id": 1,
+        "organ": "heart",
+        "x": 112,
+        "y": 42
+      }
+    ],
+    "reproduction_clock": 13.3341333333333,
+    "result": "",
+    "selected": 0,
+    "version": 2,
+    "view": "gut"
+  }
+}

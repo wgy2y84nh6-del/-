@@ -1,0 +1,83 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: first resident starts in heart
+PASS: one independent food slot in each food organ
+PASS: collect adds exactly one and immediately clears slot
+PASS: double collection rejected
+PASS: no food in heart
+PASS: 500 navigations preserve inventory, slots and clocks
+PASS: no early respawn
+PASS: respawn at next seven-second cycle
+PASS: missed cycles do not stack food
+PASS: feeding costs three and restores hunger
+PASS: insufficient food cannot be consumed
+PASS: cleanliness is absent from current game state
+PASS: base hunger drain is 0.56 points per second
+PASS: energy and joy decay remain unchanged
+PASS: held petting restores joy
+PASS: navigation ends petting
+PASS: cannot pet invisible resident
+PASS: sleep restores energy on another screen
+PASS: waking restores normal animation state
+PASS: pause freezes all simulation clocks and needs
+PASS: pause blocks gameplay mutation
+PASS: save roundtrip restores complete simulation
+PASS: serialized JSON save accepts browser numeric types
+PASS: malformed save is rejected
+PASS: all 24 original assets are loaded
+PASS: heart reference anchor is fixed at 112,42
+PASS: newborn slot does not overlap first resident
+PASS: brain reference anchor is fixed at 112,42
+PASS: gut reference anchor is fixed at 112,78
+PASS: awake frames have identical ground baseline and scale
+PASS: no egg before 50 seconds
+PASS: egg appears at 50 seconds with full 20 seconds incubation
+PASS: no hatch before 20 seconds
+PASS: hatch at 20 seconds produces second resident in heart
+PASS: manual relocation of second resident to brain
+PASS: relocation cannot duplicate a resident
+PASS: first resident stays in heart
+PASS: only three residents are produced
+PASS: real food economy supports a full three-resident win
+PASS: hatches follow real 50/20 second schedule
+PASS: final lasts exactly 40 seconds after third hatch
+PASS: no fourth resident or extra egg at cap
+PASS: ending is stable and stops further simulation
+PASS: neglect causes starvation even on human screen
+PASS: energy and joy do not block a well-fed parent
+PASS: exactly 70 percent at the eligibility check blocks reproduction
+PASS: strictly above 70 reserves brain role regardless of energy and joy
+PASS: reserved replacement cannot hatch early
+PASS: egg hatches into its stable role at twenty seconds
+PASS: brain role can be relocated
+PASS: three live residents start full forty-second final
+PASS: Puh retains original three-resident hunger rate
+PASS: both juniors drain exactly thirty percent faster
+PASS: starving junior dies and frees one live slot
+PASS: junior death resets final without a losing ending
+PASS: dead resident no longer ages or updates any needs
+PASS: dead resident cannot be selected
+PASS: replacement respects remaining reproduction cooldown
+PASS: Puh reserves the vacated brain role after fifty seconds
+PASS: save restores dead role and pending replacement egg
+PASS: replacement has fresh independent state and is born in heart
+PASS: replacement never reuses dead resident state
+PASS: recovered trio restarts final from forty
+PASS: replacement returns to the freed brain
+PASS: losing both juniors leaves Puh and a continuing game
+PASS: both missing roles are restored sequentially with correct sprites
+PASS: alive residents plus eggs never exceed three
+PASS: restored trio can reach the original good ending
+PASS: zero hunger gradually drains health
+PASS: feeding stops health loss from starvation
+PASS: positive hunger never inflicts starvation damage
+PASS: gut cannot immediately respawn at an unrelated global cycle boundary
+PASS: gut waits a full seven seconds after collection
+PASS: gut refills exactly one collectible after its own seven-second interval
+PASS: legacy save migrates needs and food timer without resetting progress
+PASS: losing only the gut resident reserves gut, never the occupied brain
+PASS: pause freezes a replacement egg, all needs and per-organ food cooldowns
+PASS: browser-format save preserves a pending gut replacement and dead slot
+PASS: single gut replacement is fresh, green-role and manually returns to gut
+PASS: legacy junior-loss save resumes with correct replacement role instead of a permanent defeat
+RESULT: 80 checks, 0 failures

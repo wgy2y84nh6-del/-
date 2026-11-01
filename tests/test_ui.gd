@@ -21,10 +21,18 @@ func run_tests() -> void:
 	check(main.mode == "menu", "F5 main scene opens the menu")
 	check(main.buttons.play.alignment == HORIZONTAL_ALIGNMENT_CENTER, "Play button uses genuine horizontal centering")
 	check(main.buttons.play.size == Vector2(580, 86), "menu button follows reference rectangle")
+	check(main.buttons.play.text == "Играть", "menu always says Играть even when a save exists")
 	check(not main.buttons.has("sound") and main.buttons.has("music"), "menu removes Sound and preserves Music")
 	check(main.buttons.settings.position.y == 391 and main.buttons.music.position.y == 532, "remaining menu buttons are evenly spaced")
 	main.start_or_resume()
+	main.restart_game()
 	await process_frame
+	check(not main.bars.has("clean") and main.bars.has("health") and main.bars.size() == 5, "exactly four pet meters remain, including health, plus human meter")
+	var speed_label := false
+	for child in main.content.get_children():
+		if child is Label and child.text == "×1":
+			speed_label = true
+	check(not speed_label and Engine.time_scale == 1.0, "speed display is absent and simulation speed stays one")
 	check(main.world.size == Vector2(800, 450), "organ image has unchanged 16:9 aspect")
 	check(main.world.position == Vector2(410, 225), "world position is independent of text alignment")
 	check(main.labels.view.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and main.labels.view.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "organ heading is centered in both dimensions")
@@ -61,6 +69,19 @@ func run_tests() -> void:
 	main.close_overlay()
 	check(main.state.paused, "closing help preserves a pre-existing pause")
 	check(main.audio.layers.size() == 3 and main.audio.layers.all(func(layer: AudioStreamPlayer): return layer.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD), "three music themes are imported as continuous loops")
+	main.state.paused = false
+	main.state.pets.append(main.state.make_pet(2))
+	main.state.pets.append(main.state.make_pet(3))
+	main.state.pets[1].organ = "brain"
+	main.state.pets[2].organ = "gut"
+	main.state.selected = 1
+	main.state.pets[1].health = 0
+	main._process(0.1)
+	check(main.state.live_count() == 2 and main.family[1].disabled and not is_instance_valid(main.overlay), "dead junior disables its selector without an ending overlay")
+	check(main.labels["count"].text == "Паразитов · 2 / 3" and main.labels["human"].text == "ЧЕЛОВЕК · СТАДИЯ 2", "count and human stage follow live residents")
+	main.navigate("brain")
+	main.world.press_at(Vector2(160, 90) * 2.5)
+	check(not main.state.petting and main.state.selected == 0, "dead junior has no interactive sprite hitbox")
 	main.state.paused = false
 	main.state.pets[0].hunger = 0
 	main.state.pets[0].health = 0.1

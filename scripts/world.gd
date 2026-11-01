@@ -29,14 +29,14 @@ func _draw() -> void:
 	if not state.result.is_empty():
 		backdrop = HomeArt.ENDINGS[state.result]
 	elif state.view == "human":
-		backdrop = HomeArt.PEOPLE[state.pets.size() - 1]
+		backdrop = HomeArt.PEOPLE[clampi(state.live_count(), 1, 3) - 1]
 	else:
 		backdrop = HomeArt.ORGANS[state.view]
 	draw_texture_rect(art.tex(backdrop), Rect2(Vector2.ZERO, size), false)
 	if state.view == "human" or not state.result.is_empty():
 		return
 	for p in state.pets:
-		if p.organ != state.view:
+		if not p.alive or p.organ != state.view:
 			continue
 		var f := art.frame(p)
 		var position_in_art := art.anchor(p) + art.frame_offset(p, f)
@@ -46,7 +46,7 @@ func _draw() -> void:
 		draw_texture_rect(art.tex(HomeArt.EGGS[f]), Rect2(Vector2(232, 126) * scale_factor, Vector2(44, 44) * scale_factor), false)
 	if state.available_food.get(state.view, false):
 		draw_texture_rect(art.tex("Еда_Для_Паразитов.png"), Rect2(HomeArt.FOOD_POSITION[state.view] * scale_factor, Vector2(32, 32) * scale_factor), false)
-	if state.petting and state.pets[state.selected].organ == state.view:
+	if state.petting and state.pets[state.selected].alive and state.pets[state.selected].organ == state.view:
 		var base := art.anchor(state.pets[state.selected])
 		for i in range(3):
 			var sway := sin(clock * 3.0 + i * 1.9) * 2.0
@@ -74,7 +74,7 @@ func press_at(point: Vector2) -> void:
 			return
 	for i in range(state.pets.size() - 1, -1, -1):
 		var p: Dictionary = state.pets[i]
-		if p.organ == state.view and Rect2(art.anchor(p), Vector2(96, 96)).has_point(local):
+		if p.alive and p.organ == state.view and Rect2(art.anchor(p), Vector2(96, 96)).has_point(local):
 			held_pointer = i
 			pet_pressed.emit(i)
 			return

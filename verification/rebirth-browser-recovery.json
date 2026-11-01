@@ -1,0 +1,230 @@
+{
+  "checks": [
+    "junior starvation removes it without ending the game",
+    "junior death resets final; Puh at or below seventy cannot lay",
+    "dead brain role has no rendered animation placement",
+    "dead junior stats and animation age remain frozen",
+    "feeding Puh permits a single replacement egg for the vacant brain",
+    "both junior deaths leave a playable one-resident population",
+    "brain replacement hatches after twenty real simulation seconds",
+    "replacement starts with fresh independent stats in heart",
+    "manual relocation restores original brain position and sprite role",
+    "next replacement egg respects at least fifty seconds between lays",
+    "gut replacement also incubates twenty seconds",
+    "manual relocation restores original gut position",
+    "recovered trio starts a fresh forty-second final",
+    "both missing roles can be restored and reach the good ending",
+    "restarted final runs forty seconds after recovering the trio",
+    "recovered roles retain their assigned organ identities",
+    "recovered population and ending survive reload",
+    "no Godot, resource or JavaScript errors during real recovery playthrough"
+  ],
+  "errors": [],
+  "events": [
+    {
+      "kind": "egg",
+      "slot": 2,
+      "at": 203.24999999999972
+    },
+    {
+      "kind": "hatch",
+      "slot": 2,
+      "at": 223.26699999999866
+    },
+    {
+      "kind": "egg",
+      "slot": 3,
+      "at": 253.25226666666399
+    },
+    {
+      "kind": "hatch",
+      "slot": 3,
+      "at": 273.2639818181788
+    }
+  ],
+  "finalState": {
+    "available_food": {
+      "brain": false,
+      "gut": false
+    },
+    "effects_volume": 0.65,
+    "egg_left": -1,
+    "egg_slot": 0,
+    "elapsed": 313.299999999996,
+    "final_left": 0,
+    "food": 0,
+    "food_cooldowns": {
+      "brain": 2.15,
+      "gut": 3
+    },
+    "hearts": 0,
+    "live_count": 3,
+    "mode": "game",
+    "music_playing": true,
+    "music_stage": 3,
+    "music_volume": 0.45,
+    "notice": "Человек умер. Все трое живы — теперь это ваш дом.",
+    "overlay": true,
+    "paused": true,
+    "pets": [
+      {
+        "age": 213.299999999999,
+        "alive": true,
+        "energy": 87.7115123199999,
+        "health": 100,
+        "hunger": 90.1554036363636,
+        "id": 1,
+        "joy": 74.5804074666671,
+        "name": "Пух",
+        "organ": "heart",
+        "sleeping": false
+      },
+      {
+        "age": 90.0330000000002,
+        "alive": true,
+        "energy": 94.5106316799999,
+        "health": 100,
+        "hunger": 96.895994368,
+        "id": 2,
+        "joy": 79.8421632000003,
+        "name": "Лилу",
+        "organ": "brain",
+        "sleeping": false
+      },
+      {
+        "age": 40.0360181818182,
+        "alive": true,
+        "energy": 71.1635521163636,
+        "health": 100,
+        "hunger": 93.066201856,
+        "id": 3,
+        "joy": 73.4696267636368,
+        "name": "Ростик",
+        "organ": "gut",
+        "sleeping": false
+      }
+    ],
+    "petting": false,
+    "placements": [
+      {
+        "frame": 1,
+        "id": 1,
+        "organ": "heart",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 0,
+        "id": 2,
+        "organ": "brain",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 1,
+        "id": 3,
+        "organ": "gut",
+        "x": 112,
+        "y": 78
+      }
+    ],
+    "reproduction_clock": 50,
+    "result": "win",
+    "selected": 0,
+    "version": 2,
+    "view": "gut"
+  },
+  "finalDuration": 40.036018181816814,
+  "lastState": {
+    "available_food": {
+      "brain": false,
+      "gut": false
+    },
+    "effects_volume": 0.65,
+    "egg_left": -1,
+    "egg_slot": 0,
+    "elapsed": 313.299999999996,
+    "final_left": 0,
+    "food": 0,
+    "food_cooldowns": {
+      "brain": 2.15,
+      "gut": 3
+    },
+    "hearts": 0,
+    "live_count": 3,
+    "mode": "game",
+    "music_playing": true,
+    "music_stage": 3,
+    "music_volume": 0.45,
+    "notice": "Человек умер. Все трое живы — теперь это ваш дом.",
+    "overlay": true,
+    "paused": true,
+    "pets": [
+      {
+        "age": 213.299999999999,
+        "alive": true,
+        "energy": 87.7115123199999,
+        "health": 100,
+        "hunger": 90.1554036363636,
+        "id": 1,
+        "joy": 74.5804074666671,
+        "name": "Пух",
+        "organ": "heart",
+        "sleeping": false
+      },
+      {
+        "age": 90.0330000000002,
+        "alive": true,
+        "energy": 94.5106316799999,
+        "health": 100,
+        "hunger": 96.895994368,
+        "id": 2,
+        "joy": 79.8421632000003,
+        "name": "Лилу",
+        "organ": "brain",
+        "sleeping": false
+      },
+      {
+        "age": 40.0360181818182,
+        "alive": true,
+        "energy": 71.1635521163636,
+        "health": 100,
+        "hunger": 93.066201856,
+        "id": 3,
+        "joy": 73.4696267636368,
+        "name": "Ростик",
+        "organ": "gut",
+        "sleeping": false
+      }
+    ],
+    "petting": false,
+    "placements": [
+      {
+        "frame": 1,
+        "id": 1,
+        "organ": "heart",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 0,
+        "id": 2,
+        "organ": "brain",
+        "x": 112,
+        "y": 42
+      },
+      {
+        "frame": 1,
+        "id": 3,
+        "organ": "gut",
+        "x": 112,
+        "y": 78
+      }
+    ],
+    "reproduction_clock": 50,
+    "result": "win",
+    "selected": 0,
+    "version": 2,
+    "view": "gut"
+  }
+}
