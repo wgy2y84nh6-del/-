@@ -1,14 +1,14 @@
 {
   "You-Are-My-Home-Godot.zip": {
-    "bytes": 2912906,
-    "sha256": "1927da8a74014d50110ef1e59ae282147f95d454d03a3f218de3329d0b4974a9"
+    "bytes": 2912909,
+    "sha256": "8911ab67bb41dbfa4fb6787e2852487578e6941c281b08fa79754b9ad710c2a5"
   },
   "You-Are-My-Home-Web.zip": {
-    "bytes": 10906808,
-    "sha256": "162d969f302310d98404b53d4aeb93c28631ce6f8d7b4241fbf95ef8c639eed2"
+    "bytes": 10906738,
+    "sha256": "dc9ba4db1abe4a7a8deaa11118149e8732d93060539734c85a88c0faeca23888"
   },
   "You-Are-My-Home.html": {
-    "bytes": 14717728,
-    "sha256": "d196062b7e8f2adc00e2d2dd38d7025d723618900be227282966d315743f8e5f"
+    "bytes": 14717636,
+    "sha256": "21057e0973ac97d5032980121723ac0c181e1a6a59b88bb326cbb194447265cd"
   }
 }
