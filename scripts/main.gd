@@ -1,10 +1,10 @@
 extends Control
 
-const BACK := Color("25182f")
-const PANEL := Color("302038")
-const PINK := Color("c780ab")
-const INK := Color("ffe0cd")
-const MUTED := Color("c9a2bc")
+const BACK := Color("201629")
+const PANEL := Color("302037")
+const PINK := Color("b786b4")
+const INK := Color("ffced4")
+const MUTED := Color("b786b4")
 const ORGAN_NAMES := {"heart": "СЕРДЦЕ", "brain": "МОЗГ", "gut": "КИШЕЧНИК", "human": "ЧЕЛОВЕК"}
 const SAVE_PATH := "user://home_save.json"
 const WEB_SAVE_KEY := "you-are-my-home:save:v1"
@@ -12,6 +12,9 @@ const StateClass = preload("res://scripts/game_state.gd")
 const ArtClass = preload("res://scripts/art.gd")
 const WorldClass = preload("res://scripts/world.gd")
 const AudioClass = preload("res://scripts/audio.gd")
+const SkinClass = preload("res://scripts/ui_skin.gd")
+const MeterClass = preload("res://scripts/ui_meter.gd")
+const SliderClass = preload("res://scripts/ui_slider.gd")
 
 var state: ParasiteGame
 var art: HomeArt
@@ -34,8 +37,13 @@ var buttons: Dictionary = {}
 var family: Array[Button] = []
 var portrait: TextureRect
 var latest_result := ""
+var skin
+var ui_images: Dictionary = {}
 
 func _ready() -> void:
+	skin = SkinClass.new()
+	body_font = skin.font
+	title_font = skin.heading
 	state = StateClass.new()
 	state.event.connect(_on_event)
 	art = ArtClass.new()
@@ -43,6 +51,7 @@ func _ready() -> void:
 	add_child(audio)
 	page = Control.new()
 	page.size = Vector2(1600, 900)
+	page.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	page.draw.connect(_paint)
 	add_child(page)
 	get_viewport().size_changed.connect(_fit)
@@ -162,27 +171,8 @@ func panel(rect: Rect2, color := PANEL, border := PINK, cut := 12.0) -> void:
 	page.draw_polyline(inset, Color(border, 0.16), 1, false)
 
 func _paint() -> void:
-	page.draw_rect(Rect2(0, 0, 1600, 900), BACK)
-	# Restrained pixel dithering, using the reference palette only.
-	for y in range(8, 900, 8):
-		for x in range(8, 1600, 8):
-			if (x * 13 + y * 7) % 104 == 0:
-				page.draw_rect(Rect2(x, y, 2, 2), Color(0.65, 0.37, 0.54, 0.035))
-	if mode == "game":
-		panel(Rect2(16, 8, 1568, 82))
-		panel(Rect2(16, 110, 360, 470))
-		panel(Rect2(16, 590, 360, 178))
-		panel(Rect2(400, 110, 820, 70), Color("352138"), Color("e995bb"))
-		panel(Rect2(400, 194, 820, 574), Color("211629"), Color("68445f"))
-		panel(Rect2(1240, 110, 344, 658))
-		panel(Rect2(16, 786, 1568, 98))
-		page.draw_line(Vector2(1272, 492), Vector2(1550, 492), PINK, 2)
-	else:
-		panel(Rect2(14, 12, 1572, 876), Color("291a31"))
-		panel(Rect2(456, 70, 688, 116), Color("342038"), Color("d38bb6"), 26)
-		page.draw_line(Vector2(92, 129), Vector2(434, 129), PINK, 2)
-		page.draw_line(Vector2(1166, 129), Vector2(1508, 129), PINK, 2)
-		page.draw_line(Vector2(92, 821), Vector2(1508, 821), PINK, 2)
+	if skin:
+		page.draw_texture_rect(skin.tex("background"), Rect2(0, 0, 1600, 900), false)
 
 func clear_content() -> void:
 	close_overlay(false)
@@ -192,6 +182,7 @@ func clear_content() -> void:
 	bars.clear()
 	buttons.clear()
 	family.clear()
+	ui_images.clear()
 	world = null
 	content = Control.new()
 	content.size = Vector2(1600, 900)
@@ -217,19 +208,8 @@ func text_node(text: String, rect: Rect2, font_size := 22, center := true, headi
 	(parent if parent else content).add_child(label)
 	return label
 
-func style(fill: Color, line: Color, primary := false) -> StyleBoxFlat:
-	var box := StyleBoxFlat.new()
-	box.bg_color = fill
-	box.border_color = line
-	box.set_border_width_all(2)
-	box.set_corner_radius_all(11)
-	box.corner_detail = 2
-	box.content_margin_left = 8
-	box.content_margin_right = 8
-	if primary:
-		box.shadow_color = Color(1, 0.28, 0.56, 0.22)
-		box.shadow_size = 10
-	return box
+func style(fill: Color, line: Color, _primary := false) -> StyleBoxFlat:
+	return skin.frame(fill, line)
 
 func bar_style(fill: Color, line: Color) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
@@ -240,29 +220,24 @@ func bar_style(fill: Color, line: Color) -> StyleBoxFlat:
 	box.corner_detail = 1
 	return box
 
-func button(key: String, title: String, rect: Rect2, action: Callable, primary := false, parent: Control = null, font_size := 24) -> Button:
+func button(key: String, title: String, rect: Rect2, action: Callable, _primary := false, parent: Control = null, font_size := 28) -> Button:
 	var b := Button.new()
 	b.name = key
 	b.position = rect.position
 	b.size = rect.size
 	b.text = title
+	b.tooltip_text = title
+	b.clip_text = true
 	b.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	b.add_theme_font_override("font", body_font)
 	b.add_theme_font_size_override("font_size", font_size)
-	b.add_theme_color_override("font_color", INK)
-	b.add_theme_color_override("font_hover_color", Color("fff0e2"))
-	b.add_theme_color_override("font_pressed_color", INK)
-	b.add_theme_color_override("font_disabled_color", Color("90748c"))
-	b.add_theme_stylebox_override("normal", style(Color("8d4a72") if primary else Color("543650"), Color("ffd5e0") if primary else PINK, primary))
-	b.add_theme_stylebox_override("hover", style(Color("995578"), Color("ffcade"), true))
-	b.add_theme_stylebox_override("pressed", style(Color("ae587f"), Color("ffe0de")))
-	b.add_theme_stylebox_override("disabled", style(Color("36263c"), Color("72516b")))
-	b.add_theme_stylebox_override("focus", style(Color(0, 0, 0, 0), Color("fff1ce")))
+	b.set_meta("label_size", font_size)
+	(parent if parent else content).add_child(b)
+	skin.apply_button(b, key if SkinClass.FILES.has(key) else "")
+	skin.fit_button(b)
 	b.pressed.connect(func():
 		audio.unlock()
 		audio.effect("click")
 		action.call())
-	(parent if parent else content).add_child(b)
 	buttons[key] = b
 	return b
 
@@ -270,12 +245,12 @@ func build_menu() -> void:
 	mode = "menu"
 	state.paused = true
 	clear_content()
-	text_node("Ты мой дом", Rect2(456, 66, 688, 116), 63, true, true)
-	button("play", "Играть", Rect2(510, 250, 580, 86), start_or_resume, true, null, 40)
-	button("settings", "Настройки", Rect2(510, 391, 580, 84), show_settings, false, null, 38)
-	button("music", "Музыка", Rect2(510, 532, 580, 84), show_settings, false, null, 38)
-	button("exit", "Выход", Rect2(510, 674, 580, 84), show_exit, false, null, 38)
-	text_node("ПАРАЗИТ-ТАМАГОЧИ", Rect2(510, 837, 580, 24), 13).modulate = MUTED
+	skin.image(content, "menu_logo", Rect2(316.25, 88, 967.5, 133.5))
+	button("play", "Играть", Rect2(600.2, 260, 399.6, 108), start_or_resume, true, null, 48)
+	button("settings", "Настройки", Rect2(600.2, 390, 399.6, 108), show_settings, false, null, 44)
+	button("music", "Музыка", Rect2(600.2, 520, 399.6, 108), show_settings, false, null, 80)
+	button("exit", "Выход", Rect2(600.2, 650, 399.6, 108), show_exit, false, null, 48)
+	text_node("ПАРАЗИТ-ТАМАГОЧИ", Rect2(510, 828, 580, 30), 22).modulate = MUTED
 
 func start_or_resume() -> void:
 	var saved_text := read_saved_text()
@@ -294,59 +269,66 @@ func start_or_resume() -> void:
 func build_game() -> void:
 	mode = "game"
 	clear_content()
-	text_node("Ты мой дом", Rect2(36, 12, 365, 65), 37, true, true)
-	labels["view"] = text_node("СЕРДЦЕ", Rect2(410, 14, 330, 62), 31, true, true)
-	button("pause", "Ⅱ", Rect2(818, 24, 82, 46), toggle_pause, false, null, 26)
-	button("help", "?", Rect2(994, 24, 58, 46), show_help, false, null, 26)
-	button("audio", "♪", Rect2(1071, 24, 58, 46), show_settings, false, null, 27)
-	labels["human"] = text_node("ЧЕЛОВЕК · СТАДИЯ 1", Rect2(1185, 13, 370, 30), 18)
-	var human_bar := ProgressBar.new()
-	human_bar.position = Vector2(1188, 53)
-	human_bar.size = Vector2(370, 20)
-	human_bar.show_percentage = false
-	human_bar.add_theme_font_size_override("font_size", 8)
-	human_bar.add_theme_stylebox_override("background", bar_style(Color("56334c"), PINK))
-	human_bar.add_theme_stylebox_override("fill", bar_style(Color("f98eaf"), Color("ffc7d6")))
+	skin.image(content, "header", Rect2(26, 14, 1548, 213.6))
+	skin.image(content, "logo", Rect2(58, 44, 296, 80))
+	var view_frame := Panel.new()
+	view_frame.position = Vector2(420, 48)
+	view_frame.size = Vector2(266.4, 72)
+	view_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	view_frame.add_theme_stylebox_override("panel", style(Color("503650"), PINK))
+	content.add_child(view_frame)
+	ui_images["view_heart"] = skin.image(content, "view_heart", Rect2(420, 48, 266.4, 72))
+	labels["view"] = text_node("СЕРДЦЕ", Rect2(420, 48, 266.4, 72), 36, true, true)
+	button("pause", "Ⅱ", Rect2(730, 54, 101.25, 60), toggle_pause, false, null, 40)
+	button("help", "?", Rect2(850, 54, 101.25, 60), show_help, false, null, 44)
+	button("audio", "Музыка и звук", Rect2(970, 54, 101.25, 60), show_settings, false, null, 20)
+	var human_bar = MeterClass.new()
+	human_bar.configure(skin, "human")
+	human_bar.position = Vector2(1188, 55)
+	human_bar.size = Vector2(337.2, 56.4)
 	content.add_child(human_bar)
-	human_bar.size = Vector2(370, 20)
 	bars["human"] = human_bar
-	labels["name"] = text_node("Пух", Rect2(42, 117, 302, 48), 34, false, true)
+	labels["human"] = text_node("ЧЕЛОВЕК · СТАДИЯ 1", Rect2(1188, 55, 337.2, 30), 20)
+	labels["human"].visible = false
+	labels["notice"] = text_node(state.notice, Rect2(126, 147, 1348, 48), 25)
+	labels["notice"].autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ui_images["card"] = skin.image(content, "card0", Rect2(24, 244, 274.75, 518))
+	labels["name"] = text_node("Пух", Rect2(44, 252, 234, 34), 28)
+	labels["name"].visible = false
 	portrait = TextureRect.new()
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	content.add_child(portrait)
-	labels["home"] = text_node("Дома в сердце", Rect2(55, 309, 280, 26), 15)
-	var stat_names := ["Сытость", "Энергия", "Довольство", "Здоровье"]
+	labels["home"] = text_node("Дома в сердце", Rect2(42, 449, 238, 26), 24)
 	var stat_keys := ["hunger", "energy", "joy", "health"]
-	var colors := ["f6a0af", "bdace7", "ffd17e", "ff87ab"]
 	for i in range(4):
-		var y := 340 + i * 43
-		text_node(stat_names[i], Rect2(69, y, 206, 23), 18, false)
-		labels[stat_keys[i]] = text_node("85%", Rect2(294, y, 60, 23), 18)
-		var bar := ProgressBar.new()
-		bar.position = Vector2(70, y + 25)
-		bar.size = Vector2(207, 16)
-		bar.show_percentage = false
-		bar.add_theme_font_size_override("font_size", 8)
-		bar.add_theme_stylebox_override("background", bar_style(Color("67415e"), Color("bc7da1")))
-		bar.add_theme_stylebox_override("fill", bar_style(Color(colors[i]), Color(colors[i]).lightened(0.15)))
+		var y := 492.0 + i * 54.0
+		var bar = MeterClass.new()
+		bar.configure(skin, stat_keys[i])
+		bar.position = Vector2(51, y)
+		bar.size = Vector2(220.8, 40.0 if i == 1 else 36.8)
 		content.add_child(bar)
-		bar.size = Vector2(207, 16)
 		bars[stat_keys[i]] = bar
-	text_node("Твоя семья", Rect2(42, 596, 307, 32), 24)
+		labels[stat_keys[i]] = text_node("85%", Rect2(218, y - 4, 54, 23), 24)
+		if i == 3:
+			text_node("Здоровье", Rect2(51, y - 5, 158, 23), 22, false)
+	skin.image(content, "family", Rect2(324, 244, 188.4, 333.6))
 	for i in range(3):
 		var index := i
-		var b := button("family%d" % i, ["Пух", "Лилу", "Ростик"][i], Rect2(39 + i * 108, 638, 99, 44), func(): state.select_pet(index), false, null, 17)
+		var b := button("family%d" % i, ["Пух", "Лилу", "Ростик"][i], Rect2(344.2, 295 + i * 56, 148, 40), func(): state.select_pet(index), false, null, 22)
 		family.append(b)
-	button("visit", "К питомцу →", Rect2(40, 700, 312, 49), func(): navigate(state.pets[state.selected].organ), false, null, 25)
-	labels["notice"] = text_node(state.notice, Rect2(417, 116, 786, 56), 19)
-	labels["notice"].autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		labels["family_status%d" % i] = text_node("", Rect2(332, 336 + i * 56, 172, 16), 15)
+		labels["family_status%d" % i].visible = false
+	button("visit", "К питомцу", Rect2(344.2, 489, 148, 40), func(): navigate(state.pets[state.selected].organ), false, null, 18)
+	labels["family_count"] = text_node("1 / 3", Rect2(332, 541, 172, 24), 24)
+	labels["timers"] = text_node("", Rect2(532, 246, 688.5, 36), 25)
+	skin.image(content, "world_frame", Rect2(532, 300, 688.5, 378))
 	world = WorldClass.new()
 	world.state = state
 	world.art = art
-	world.position = Vector2(410, 225)
-	world.size = Vector2(800, 450)
+	world.position = Vector2(556.25, 309)
+	world.size = Vector2(640, 360)
 	world.clip_contents = true
 	world.food_pressed.connect(func(organ: String): state.collect(organ))
 	world.pet_pressed.connect(func(index: int):
@@ -354,30 +336,36 @@ func build_game() -> void:
 		state.start_petting())
 	world.pet_released.connect(stop_petting)
 	content.add_child(world)
-	labels["caption"] = text_node("", Rect2(415, 683, 790, 30), 18)
-	labels["timers"] = text_node("", Rect2(416, 725, 788, 27), 17)
-	text_node("ЗАБОТА", Rect2(1260, 122, 304, 45), 26, true, true)
-	button("feed", "Кормить", Rect2(1264, 190, 296, 62), func(): state.feed(), true, null, 28)
-	var pet_button := button("pet", "Гладить", Rect2(1264, 305, 296, 62), func(): pass, false, null, 21)
+	var caption_panel := Panel.new()
+	caption_panel.position = Vector2(553.75, 690)
+	caption_panel.size = Vector2(645, 89)
+	caption_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caption_panel.add_theme_stylebox_override("panel", style(PANEL, PINK))
+	content.add_child(caption_panel)
+	ui_images["food_hint"] = skin.image(content, "food_hint", Rect2(553.75, 690, 645, 89))
+	labels["caption"] = text_node("", Rect2(568, 696, 616, 77), 23)
+	labels["caption"].autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	skin.image(content, "care", Rect2(1293, 244, 274.75, 518))
+	button("feed", "Кормить", Rect2(1315, 303, 236.8, 64), func(): state.feed(), true, null, 28)
+	var pet_button := button("pet", "Гладить", Rect2(1315, 387, 236.8, 64), func(): pass, false, null, 28)
 	pet_button.button_down.connect(func():
 		audio.unlock()
 		state.start_petting())
 	pet_button.button_up.connect(stop_petting)
 	pet_button.mouse_exited.connect(stop_petting)
-	button("sleep", "Спать", Rect2(1264, 421, 296, 62), func(): state.sleep_toggle(), false, null, 28)
-	labels["food"] = text_node("Еда · 6", Rect2(1270, 509, 280, 42), 28, true, true)
-	text_node("Одно кормление = 3 еды", Rect2(1267, 554, 290, 30), 16)
-	text_node("Собирай по одному шарику\nв мозгу и кишечнике", Rect2(1266, 587, 293, 54), 16)
-	button("move", "Переселить", Rect2(1264, 659, 296, 53), func(): state.relocate(), false, null, 22)
-	labels["count"] = text_node("Паразитов · 1 / 3", Rect2(1264, 722, 296, 30), 18)
-	button("human", "Человек", Rect2(34, 805, 255, 61), func(): navigate("human"), false, null, 25)
-	button("heart", "Сердце", Rect2(311, 805, 250, 61), func(): navigate("heart"), false, null, 25)
-	button("brain", "Мозг", Rect2(582, 805, 250, 61), func(): navigate("brain"), false, null, 25)
-	button("gut", "Кишечник", Rect2(853, 805, 250, 61), func(): navigate("gut"), false, null, 25)
-	button("menu", "Меню", Rect2(1125, 805, 172, 61), func():
+	button("sleep", "Спать", Rect2(1315, 471, 236.8, 64), func(): state.sleep_toggle(), false, null, 44)
+	labels["food"] = text_node("Еда · 6", Rect2(1310, 552, 242, 36), 30, true, true)
+	text_node("Кормление — 3 еды", Rect2(1303, 594, 254, 27), 21)
+	button("move", "Переселить", Rect2(1315, 646, 236.8, 64), func(): state.relocate(), false, null, 28)
+	labels["count"] = text_node("Паразитов · 1 / 3", Rect2(1303, 725, 254, 26), 21)
+	button("human", "Человек", Rect2(40, 810, 236.8, 64), func(): navigate("human"), false, null, 28)
+	button("heart", "Сердце", Rect2(296.8, 810, 236.8, 64), func(): navigate("heart"), false, null, 28)
+	button("brain", "Мозг", Rect2(553.6, 810, 236.8, 64), func(): navigate("brain"), false, null, 48)
+	button("gut", "Кишечник", Rect2(810.4, 810, 236.8, 64), func(): navigate("gut"), false, null, 28)
+	button("menu", "Меню", Rect2(1067.2, 810, 236.8, 64), func():
 		save_game()
-		build_menu(), false, null, 24)
-	button("restart", "Заново", Rect2(1318, 805, 248, 61), confirm_restart, false, null, 25)
+		build_menu(), false, null, 48)
+	button("restart", "Заново", Rect2(1324, 810, 236.8, 64), confirm_restart, false, null, 28)
 	refresh()
 
 func refresh() -> void:
@@ -387,12 +375,17 @@ func refresh() -> void:
 		state.selected = 0
 	var p: Dictionary = state.pets[state.selected]
 	labels["name"].text = p.name
+	ui_images["card"].texture = skin.atlas("card%d" % (int(p.id) - 1))
 	labels["view"].text = ORGAN_NAMES[state.view]
+	ui_images["view_heart"].visible = state.view == "heart"
+	labels["view"].visible = state.view != "heart"
 	labels["home"].text = ("Сладко спит · " if p.sleeping else "Дома · ") + ORGAN_NAMES[p.organ].to_lower()
 	labels["notice"].text = state.notice
 	labels["food"].text = "Еда · %d" % state.food
 	labels["count"].text = "Паразитов · %d / 3" % state.live_count()
+	labels["family_count"].text = "%d / 3" % state.live_count()
 	labels["human"].text = "ЧЕЛОВЕК · СТАДИЯ %d" % maxi(1, state.live_count())
+	bars["human"].set_stage(maxi(1, state.live_count()))
 	bars["human"].value = 100 - (maxi(1, state.live_count()) - 1) * 32
 	if state.final_left >= 0:
 		bars["human"].value = 36 * state.final_left / 40.0
@@ -401,23 +394,28 @@ func refresh() -> void:
 		labels[key].text = "%d%%" % ceili(p[key])
 	var f := art.frame(p)
 	portrait.texture = art.tex(art.pet_file(p, f))
-	portrait.position = Vector2(129, 188) + art.frame_offset(p, f) * 1.45
-	portrait.size = Vector2(96, 96) * 1.45
+	portrait.position = Vector2(98.975, 330) + art.frame_offset(p, f) * 1.3
+	portrait.size = Vector2(96, 96) * 1.3
 	for i in range(3):
 		family[i].disabled = i >= state.pets.size() or not state.pets[i].alive
-		family[i].modulate = Color.WHITE if i == state.selected else Color("baa2b7")
+		skin.mark(family[i], i == state.selected)
+		labels["family_status%d" % i].text = "Появится позже" if i >= state.pets.size() else ("Ждём замену" if not state.pets[i].alive else ORGAN_NAMES[state.pets[i].organ].capitalize())
 	buttons["sleep"].text = "Разбудить" if p.sleeping else "Спать"
+	skin.apply_button(buttons["sleep"], "" if p.sleeping else "sleep")
 	buttons["pause"].text = "▶" if state.paused else "Ⅱ"
+	skin.apply_button(buttons["pause"], "continue" if state.paused else "pause")
 	buttons["feed"].disabled = state.paused or not state.result.is_empty()
 	buttons["pet"].disabled = state.paused or not state.result.is_empty()
 	buttons["sleep"].disabled = state.paused or not state.result.is_empty()
 	buttons["move"].disabled = state.paused or p.id == 1 or p.organ != "heart" or not state.result.is_empty()
 	if p.id > 1 and p.organ == "heart":
-		buttons["move"].text = "Переселить → " + ("мозг" if p.id == 2 else "кишечник")
+		buttons["move"].text = "Переселить\n" + ("в мозг" if p.id == 2 else "в кишечник")
 	else:
 		buttons["move"].text = "Дома · " + ORGAN_NAMES[p.organ].to_lower()
+	skin.fit_button(buttons["move"])
+	skin.fit_button(buttons["sleep"])
 	for key in ["human", "heart", "brain", "gut"]:
-		buttons[key].modulate = Color("ffbad5") if state.view == key else Color.WHITE
+		skin.mark(buttons[key], state.view == key)
 	if state.view == "human":
 		labels["caption"].text = "Один организм. %d маленьких жильца." % state.live_count()
 	elif state.view in ["brain", "gut"]:
@@ -436,6 +434,9 @@ func refresh() -> void:
 	if state.paused:
 		timers = "ПАУЗА  ·  нажми ▶ или пробел"
 	labels["timers"].text = timers
+	var show_food_art: bool = state.view in ["brain", "gut"] and state.available_food[state.view]
+	ui_images["food_hint"].visible = show_food_art
+	labels["caption"].visible = not show_food_art
 
 func navigate(destination: String) -> void:
 	stop_petting()
@@ -460,15 +461,15 @@ func make_overlay(title: String, height := 490.0) -> Control:
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	page.add_child(overlay)
 	var shade := ColorRect.new()
-	shade.color = Color(0.07, 0.035, 0.09, 0.87)
+	shade.color = Color(0.125, 0.086, 0.16, 0.90)
 	shade.size = overlay.size
 	overlay.add_child(shade)
 	var box := Panel.new()
 	box.position = Vector2(410, (900 - height) / 2.0)
 	box.size = Vector2(780, height)
-	box.add_theme_stylebox_override("panel", style(Color("332039"), PINK, true))
+	box.add_theme_stylebox_override("panel", style(PANEL, PINK, true))
 	overlay.add_child(box)
-	text_node(title, Rect2(430, box.position.y + 22, 740, 64), 34, true, true, overlay)
+	text_node(title, Rect2(430, box.position.y + 22, 740, 64), 40, true, true, overlay)
 	return overlay
 
 func close_overlay(resume := true) -> void:
@@ -481,42 +482,40 @@ func close_overlay(resume := true) -> void:
 
 func show_settings() -> void:
 	var ui := make_overlay("Настройки звука")
-	text_node("Музыка", Rect2(475, 325, 650, 38), 25, true, false, ui)
-	add_slider(Vector2(520, 380), audio.music_volume, func(value: float):
+	skin.image(ui, "volume_music", Rect2(524, 318, 552, 100))
+	add_slider(Vector2(528, 374), audio.music_volume, func(value: float):
 		audio.music_volume = value
 		audio.apply_volume()
 		audio.save_settings(), ui)
-	text_node("Эффекты", Rect2(475, 438, 650, 38), 25, true, false, ui)
-	add_slider(Vector2(520, 491), audio.effects_volume, func(value: float):
+	skin.image(ui, "volume_sound", Rect2(524, 448, 552, 102))
+	add_slider(Vector2(528, 506), audio.effects_volume, func(value: float):
 		audio.effects_volume = value
 		audio.apply_volume()
 		audio.save_settings(), ui)
-	button("audio_back", "Готово", Rect2(600, 595, 400, 62), close_overlay, true, ui, 27)
+	button("audio_back", "Готово", Rect2(637.2, 591, 325.6, 80), close_overlay, true, ui, 48)
 
 func add_slider(pos: Vector2, value: float, callback: Callable, parent: Control) -> void:
-	var slider := HSlider.new()
+	var slider = SliderClass.new()
 	slider.position = pos
-	slider.size = Vector2(560, 38)
+	slider.size = Vector2(546, 40)
 	slider.min_value = 0
 	slider.max_value = 1
 	slider.step = 0.01
 	slider.value = value
-	slider.add_theme_stylebox_override("slider", style(Color("5d3d59"), PINK))
-	slider.add_theme_stylebox_override("grabber_area", style(Color("dc83ac"), Color("ffb8d1")))
 	slider.value_changed.connect(callback)
 	parent.add_child(slider)
 
 func show_help() -> void:
-	var ui := make_overlay("Как обжиться внутри", 650)
+	var ui := make_overlay("Как обжиться внутри", 700)
 	var instructions := "Собирай по одному шарику в мозгу и кишечнике.\nНовый цикл — каждые 7 секунд. Кормление стоит 3 еды.\n\nВыбери питомца слева. Корми, гладь и укладывай спать.\nУдерживай «Гладить» или самого питомца: появятся сердечки.\n\nПух откладывает яйцо раз в 50 секунд при сытости > 70%.\nЯйцо вылупляется за 20 секунд. Пересели Лилу в мозг,\nа Ростика — в кишечник кнопкой «Переселить».\n\nТри живых питомца запускают финал на 40 секунд.\nМладшие голодают быстрее. Пух может вырастить им замену.\n\n1 — кормить   4 — сон   Пробел — пауза\nH — человек   Q / W / E — органы   Esc — закрыть окно\nПрогресс сохраняется автоматически, офлайн-время не считается."
-	text_node(instructions, Rect2(435, 230, 730, 390), 19, true, false, ui)
-	button("help_back", "Понятно", Rect2(600, 665, 400, 62), close_overlay, true, ui, 27)
+	text_node(instructions, Rect2(435, 208, 730, 430), 21, true, false, ui)
+	button("help_back", "Понятно", Rect2(637.2, 670, 325.6, 80), close_overlay, true, ui, 48)
 
 func confirm_restart() -> void:
 	var ui := make_overlay("Начать заново?", 340)
 	text_node("Текущая семья и запас еды будут сброшены.", Rect2(450, 395, 700, 50), 23, true, false, ui)
-	button("restart_cancel", "Остаться", Rect2(480, 495, 300, 61), close_overlay, false, ui, 25)
-	button("restart_confirm", "Новый дом", Rect2(820, 495, 300, 61), restart_game, true, ui, 25)
+	button("restart_cancel", "Остаться", Rect2(480, 495, 300, 80), close_overlay, false, ui, 40)
+	button("restart_confirm", "Новый дом", Rect2(820, 495, 300, 80), restart_game, true, ui, 40)
 
 func restart_game() -> void:
 	close_overlay(false)
@@ -530,13 +529,13 @@ func restart_game() -> void:
 func show_ending() -> void:
 	var ui := make_overlay("Теперь это ваш дом" if state.result == "win" else "Дом опустел", 360)
 	text_node(state.notice, Rect2(460, 390, 680, 85), 22, true, false, ui).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	button("ending_look", "Посмотреть", Rect2(480, 505, 300, 61), close_overlay, false, ui, 25)
-	button("ending_again", "Начать заново", Rect2(820, 505, 300, 61), restart_game, true, ui, 25)
+	button("ending_look", "Посмотреть", Rect2(480, 505, 300, 80), close_overlay, false, ui, 40)
+	button("ending_again", "Начать заново", Rect2(820, 505, 300, 80), restart_game, true, ui, 40)
 
 func show_exit() -> void:
 	var ui := make_overlay("До встречи дома", 340)
 	text_node("В браузере можно закрыть эту вкладку.\nПрогресс сохранён — семья дождётся тебя.", Rect2(450, 380, 700, 90), 23, true, false, ui)
-	button("exit_back", "Остаться", Rect2(600, 505, 400, 61), close_overlay, true, ui, 25)
+	button("exit_back", "Остаться", Rect2(600, 505, 400, 80), close_overlay, true, ui, 40)
 
 func save_game() -> void:
 	if state == null or mode != "game":

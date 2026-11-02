@@ -1,0 +1,21 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+RATE: count=1 id=1 need=hunger old=0.784000000 new=1.372000000 points/sec
+RATE: count=1 id=1 need=energy old=0.240000000 new=0.420000000 points/sec
+RATE: count=1 id=1 need=joy old=0.200000000 new=0.350000000 points/sec
+RATE: count=2 id=1 need=hunger old=0.956480000 new=1.673840000 points/sec
+RATE: count=2 id=1 need=energy old=0.292800000 new=0.512400000 points/sec
+RATE: count=2 id=1 need=joy old=0.244000000 new=0.427000000 points/sec
+RATE: count=2 id=2 need=hunger old=1.243424000 new=2.175992000 points/sec
+RATE: count=2 id=2 need=energy old=0.292800000 new=0.512400000 points/sec
+RATE: count=2 id=2 need=joy old=0.244000000 new=0.427000000 points/sec
+RATE: count=3 id=1 need=hunger old=1.128960000 new=1.975680000 points/sec
+RATE: count=3 id=1 need=energy old=0.345600000 new=0.604800000 points/sec
+RATE: count=3 id=1 need=joy old=0.288000000 new=0.504000000 points/sec
+RATE: count=3 id=2 need=hunger old=1.467648000 new=2.568384000 points/sec
+RATE: count=3 id=2 need=energy old=0.345600000 new=0.604800000 points/sec
+RATE: count=3 id=2 need=joy old=0.288000000 new=0.504000000 points/sec
+RATE: count=3 id=3 need=hunger old=1.467648000 new=2.568384000 points/sec
+RATE: count=3 id=3 need=energy old=0.345600000 new=0.604800000 points/sec
+RATE: count=3 id=3 need=joy old=0.288000000 new=0.504000000 points/sec
+RESULT: 126 checks, 0 failures

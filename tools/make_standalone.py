@@ -15,7 +15,7 @@ def package(source: Path, target: Path):
     html = (source / "index.html").read_text()
     project = Path(__file__).resolve().parents[1]
     notices = []
-    for name in ["GODOT_LICENSE.txt", "assets/fonts/LICENSE-DejaVu.txt", "assets/audio/LICENSE.txt"]:
+    for name in ["GODOT_LICENSE.txt", "assets/fonts/LICENSE-DejaVu.txt", "assets/fonts/LICENSE-Tiny5.txt", "assets/audio/LICENSE.txt"]:
         file = project / name
         if file.is_file():
             notices.append(name + "\n" + file.read_text())
