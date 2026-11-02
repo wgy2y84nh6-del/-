@@ -33,6 +33,7 @@ def run():
     licenses = web / 'licenses'
     licenses.mkdir(exist_ok=True)
     shutil.copy2(ROOT / 'assets/fonts/LICENSE-DejaVu.txt', licenses / 'DejaVu.txt')
+    shutil.copy2(ROOT / 'assets/fonts/LICENSE-Tiny5.txt', licenses / 'Tiny5.txt')
     shutil.copy2(ROOT / 'assets/audio/LICENSE.txt', licenses / 'Original-Audio-CC0.txt')
     (web / 'README.txt').write_text('''ТЫ МОЙ ДОМ · ГОТОВЫЙ GODOT WEB EXPORT
 

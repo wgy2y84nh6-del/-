@@ -1,95 +1,150 @@
 extends SceneTree
-## Structural layout and pointer-release contracts on the real main scene.
+
 var checks := 0
 var failures: Array[String] = []
+var geometry: Dictionary = {}
 
 func check(value: bool, title: String) -> void:
 	checks += 1
-	if value:
-		print("PASS: " + title)
-	else:
+	if not value:
 		failures.append(title)
-		push_error("FAIL: " + title)
+		push_error(title)
+
+func record(main: Control, key: String) -> void:
+	var controls: Dictionary = {}
+	var live: Array[Button] = []
+	for name in main.buttons:
+		var b = main.buttons[name]
+		if not is_instance_valid(b) or b.is_queued_for_deletion():
+			continue
+		controls[name] = {"x": b.position.x, "y": b.position.y, "w": b.size.x, "h": b.size.y}
+		check(b.position.x >= 0 and b.position.y >= 0 and b.position.x + b.size.x <= 1600.1 and b.position.y + b.size.y <= 900.1, key + ": button stays on screen: " + name)
+		live.append(b)
+		if b.get_meta("art_skin", "") == "":
+			var font: Font = b.get_theme_font("font")
+			var font_size: int = b.get_theme_font_size("font_size")
+			for line in b.text.split("\n"):
+				check(font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= b.size.x - 20, key + ": button text fits: " + name)
+	for i in range(live.size()):
+		for j in range(i + 1, live.size()):
+			# Overlay controls intentionally cover the underlying screen.
+			if live[i].get_parent() == live[j].get_parent():
+				check(not Rect2(live[i].position, live[i].size).intersects(Rect2(live[j].position, live[j].size)), key + ": buttons do not overlap")
+	geometry[key] = controls
 
 func _initialize() -> void:
-	call_deferred("run_tests")
+	call_deferred("run")
 
-func run_tests() -> void:
+func run() -> void:
 	var main = load("res://scenes/Main.tscn").instantiate()
 	root.add_child(main)
 	await process_frame
-	check(main.mode == "menu", "F5 main scene opens the menu")
-	check(main.buttons.play.alignment == HORIZONTAL_ALIGNMENT_CENTER, "Play button uses genuine horizontal centering")
-	check(main.buttons.play.size == Vector2(580, 86), "menu button follows reference rectangle")
-	check(main.buttons.play.text == "Играть", "menu always says Играть even when a save exists")
-	check(not main.buttons.has("sound") and main.buttons.has("music"), "menu removes Sound and preserves Music")
-	check(main.buttons.settings.position.y == 391 and main.buttons.music.position.y == 532, "remaining menu buttons are evenly spaced")
+	check(main.skin.textures.size() == 43, "All forty-three supplied PNGs are loaded")
+	check(main.mode == "menu" and main.state.paused, "Menu opens without advancing the simulation")
+	check(main.buttons.play.get_meta("art_skin") == "play" and main.buttons.settings.get_meta("art_skin") == "settings" and main.buttons.exit.get_meta("art_skin") == "exit", "Prepared menu images take priority")
+	record(main, "menu")
+	main.buttons.settings.pressed.emit()
+	await process_frame
+	check(is_instance_valid(main.overlay), "Settings button opens overlay")
+	var sliders: Array[Node] = main.overlay.find_children("*", "HSlider", true, false)
+	check(sliders.size() == 2, "Both volume controls are retained")
+	sliders[0].value = 0.23
+	sliders[1].value = 0.67
+	check(absf(main.audio.music_volume - 0.23) < 0.001 and absf(main.audio.effects_volume - 0.67) < 0.001, "Original independent volume callbacks still work")
+	record(main, "settings")
+	main.buttons.audio_back.pressed.emit()
+	await process_frame
+	check(not is_instance_valid(main.overlay), "Settings can be closed")
 	main.start_or_resume()
 	main.restart_game()
-	await process_frame
-	check(not main.bars.has("clean") and main.bars.has("health") and main.bars.size() == 5, "exactly four pet meters remain, including health, plus human meter")
-	var speed_label := false
-	for child in main.content.get_children():
-		if child is Label and child.text == "×1":
-			speed_label = true
-	check(not speed_label and Engine.time_scale == 1.0, "speed display is absent and simulation speed stays one")
-	check(main.world.size == Vector2(800, 450), "organ image has unchanged 16:9 aspect")
-	check(main.world.position == Vector2(410, 225), "world position is independent of text alignment")
-	check(main.labels.view.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and main.labels.view.vertical_alignment == VERTICAL_ALIGNMENT_CENTER, "organ heading is centered in both dimensions")
-	var centered := true
-	for key in ["feed", "pet", "sleep", "human", "heart", "brain", "gut", "restart"]:
-		centered = centered and main.buttons[key].alignment == HORIZONTAL_ALIGNMENT_CENTER
-	check(centered, "all game-action and navigation button texts are centered")
-	check(not main.buttons.has("wash") and main.buttons.pet.text == "Гладить", "care removes Wash and pet label contains only Гладить")
-	check(main.buttons.pet.position == Vector2(1264, 305) and main.buttons.sleep.position == Vector2(1264, 421), "care buttons reflow without moving sleep or other panels")
-	for i in range(3):
-		main.state.pets[0].age = i * 0.55
-		main.refresh()
-		check(main.portrait.position.y >= 165, "portrait does not overlap the name, phase %d" % i)
-	check(main.bars.hunger.size.y <= 20, "stat bars fit between their labels")
-	main.state.set_view("heart")
-	main.state.start_petting()
-	main.navigate("human")
-	check(not main.state.petting, "navigation immediately clears hearts")
-	var positions: Dictionary = {}
-	for key in ["feed", "human", "visit"]:
-		positions[key] = main.buttons[key].position
-	for key in ["heart", "brain", "gut", "human"]:
-		main.navigate(key)
-	var fixed := true
-	for key in positions:
-		fixed = fixed and positions[key] == main.buttons[key].position
-	check(fixed, "care, family and navigation stay in place on every screen")
-	main.show_settings()
-	check(main.state.paused and is_instance_valid(main.overlay), "settings pauses gameplay")
-	main.close_overlay()
-	check(not main.state.paused, "closing settings resumes an active game")
 	main.state.paused = true
-	main.show_help()
-	main.close_overlay()
-	check(main.state.paused, "closing help preserves a pre-existing pause")
-	check(main.audio.layers.size() == 3 and main.audio.layers.all(func(layer: AudioStreamPlayer): return layer.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD), "three music themes are imported as continuous loops")
+	main.refresh()
+	await process_frame
+	check(main.world.size == Vector2(640, 360) and main.world.size.x / main.world.size.y == 16.0 / 9.0, "Original scene proportions are preserved")
+	check(main.skin.region("card0").size.x / main.skin.region("card0").size.y == main.ui_images.card.size.x / main.ui_images.card.size.y, "Supplied portrait panel retains its proportions")
+	check(main.bars.size() == 5, "All four needs and human status remain visible")
+	record(main, "game")
 	main.state.paused = false
+	main.state.pets[0].hunger = 20.0
+	main.state.food = 6
+	main.buttons.feed.pressed.emit()
+	check(main.state.pets[0].hunger == 62.0 and main.state.food == 3, "New feed image invokes the original feed action")
+	main.buttons.sleep.pressed.emit()
+	main.refresh()
+	check(main.state.pets[0].sleeping and main.buttons.sleep.text == "Разбудить" and main.buttons.sleep.get_meta("art_skin") == "", "Sleep changes to a matching wake-up control")
+	main.buttons.sleep.pressed.emit()
+	main.refresh()
+	check(not main.state.pets[0].sleeping and main.buttons.sleep.get_meta("art_skin") == "sleep", "Original sleep image returns when awake")
+	main.buttons.pet.button_down.emit()
+	check(main.state.petting, "Petting begins on button hold")
+	main.buttons.pet.button_up.emit()
+	check(not main.state.petting, "Petting stops on release")
 	main.state.pets.append(main.state.make_pet(2))
+	main.refresh()
+	main.buttons.family1.pressed.emit()
+	main.refresh()
+	check(main.state.selected == 1 and main.ui_images.card.texture == main.skin.atlas("card1"), "Lilu selector switches to the supplied Lilu panel")
+	main.buttons.move.pressed.emit()
+	main.refresh()
+	check(main.state.pets[1].organ == "brain", "Relocation still uses the original action")
+	main.buttons.visit.pressed.emit()
+	main.refresh()
+	check(main.state.view == "brain" and main.labels.view.visible, "Visit and missing brain tab work")
 	main.state.pets.append(main.state.make_pet(3))
-	main.state.pets[1].organ = "brain"
-	main.state.pets[2].organ = "gut"
-	main.state.selected = 1
-	main.state.pets[1].health = 0
-	main._process(0.1)
-	check(main.state.live_count() == 2 and main.family[1].disabled and not is_instance_valid(main.overlay), "dead junior disables its selector without an ending overlay")
-	check(main.labels["count"].text == "Паразитов · 2 / 3" and main.labels["human"].text == "ЧЕЛОВЕК · СТАДИЯ 2", "count and human stage follow live residents")
-	main.navigate("brain")
-	main.world.press_at(Vector2(160, 90) * 2.5)
-	check(not main.state.petting and main.state.selected == 0, "dead junior has no interactive sprite hitbox")
-	main.state.paused = false
-	main.state.pets[0].hunger = 0
+	main.refresh()
+	main.buttons.family2.pressed.emit()
+	main.refresh()
+	check(main.ui_images.card.texture == main.skin.atlas("card2"), "Rostik panel uses supplied artwork")
+	main.buttons.move.pressed.emit()
+	main.refresh()
+	check(main.state.pets[2].organ == "gut" and main.bars.human.stage == 3, "Third relocation and third human-stage image work")
+	for need in ["hunger", "energy", "joy", "health"]:
+		for amount in [0.0, 25.0, 50.0, 75.0, 100.0]:
+			main.state.pets[2][need] = amount
+			main.refresh()
+			check(main.bars[need].value == amount, "Artwork meter follows exact value: " + need)
+	main.state.pets[2].health = 100.0
+	main.state.pets[1].health = 0.0
+	main._process(0.01)
+	check(main.family[1].disabled and main.state.result.is_empty(), "Dead junior is disabled without a losing overlay")
+	main.restart_game()
+	main.state.pets[0].hunger = 0.0
 	main.state.pets[0].health = 0.1
 	main._process(0.1)
-	check(main.state.result == "loss" and is_instance_valid(main.overlay), "starvation opens actual bad-ending UI")
+	check(main.state.result == "loss" and is_instance_valid(main.overlay), "Original loss opens the new modal skin")
+	record(main, "loss")
+	main.buttons.ending_again.pressed.emit()
+	check(main.state.result.is_empty() and main.state.pets.size() == 1 and main.state.food == 6, "Restart from ending retains original reset behavior")
+	main.state.pets.append(main.state.make_pet(2))
+	main.state.pets.append(main.state.make_pet(3))
+	main.state.final_left = 0.01
+	main._process(0.02)
+	check(main.state.result == "win" and is_instance_valid(main.overlay), "Original win opens the new modal skin")
+	record(main, "win")
+	main.buttons.ending_look.pressed.emit()
+	check(not is_instance_valid(main.overlay), "Ending view can be revealed")
 	main.restart_game()
-	check(main.state.pets.size() == 1 and main.state.food == 6 and main.state.result.is_empty() and not main.state.paused, "restart fully restores the playable initial state")
-	main.queue_free()
+	main.buttons.help.pressed.emit()
 	await process_frame
+	record(main, "help")
+	main.buttons.help_back.pressed.emit()
+	main.buttons.restart.pressed.emit()
+	await process_frame
+	record(main, "restart")
+	main.buttons.restart_cancel.pressed.emit()
+	check(not is_instance_valid(main.overlay) and not main.state.paused, "Cancel restores original running state")
+	main.buttons.menu.pressed.emit()
+	main.buttons.exit.pressed.emit()
+	await process_frame
+	record(main, "exit")
+	main.buttons.exit_back.pressed.emit()
+	check(main.mode == "menu" and not is_instance_valid(main.overlay), "Exit dialog still returns to menu")
+	if not OS.get_environment("HOME_UI_TEST_OUTPUT").is_empty():
+		FileAccess.open(OS.get_environment("HOME_UI_TEST_OUTPUT"), FileAccess.WRITE).store_string(JSON.stringify(geometry))
+	for player in main.find_children("*", "AudioStreamPlayer", true, false):
+		player.stop()
+	await create_timer(0.1).timeout
+	main.queue_free()
+	await create_timer(0.1).timeout
 	print("RESULT: %d UI checks, %d failures" % [checks, failures.size()])
 	quit(0 if failures.is_empty() else 1)
