@@ -132,6 +132,7 @@ func run() -> void:
 	main.state.pets[0].health = 0.1
 	main._process(0.1)
 	check(main.state.result == "loss" and is_instance_valid(main.overlay), "Original loss opens the new modal skin")
+	check(main.labels.caption.text == "Дом опустел" and main.labels.timers.text == "ИГРА ЗАВЕРШЕНА", "Loss caption shows the ending instead of a breeding hint")
 	record(main, "loss")
 	main.buttons.ending_again.pressed.emit()
 	check(main.state.result.is_empty() and main.state.pets.size() == 1 and main.state.food == 6, "Restart from ending retains original reset behavior")
@@ -140,6 +141,7 @@ func run() -> void:
 	main.state.final_left = 0.01
 	main._process(0.02)
 	check(main.state.result == "win" and is_instance_valid(main.overlay), "Original win opens the new modal skin")
+	check(main.labels.caption.text == "Теперь это ваш дом" and main.labels.timers.text == "ИГРА ЗАВЕРШЕНА", "Win caption shows the ending instead of a pause prompt")
 	record(main, "win")
 	main.buttons.ending_look.pressed.emit()
 	check(not is_instance_valid(main.overlay), "Ending view can be revealed")

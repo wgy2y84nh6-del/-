@@ -1,8 +1,4 @@
 {
-  "design": [
-    1600,
-    900
-  ],
   "areas": {
     "audio": {
       "anchors": [
@@ -865,6 +861,10 @@
       ]
     }
   },
+  "design": [
+    1600,
+    900
+  ],
   "screens": {
     "exit": {
       "exit": {

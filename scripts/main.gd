@@ -435,7 +435,9 @@ func refresh() -> void:
 	skin.fit_button(buttons["sleep"])
 	for key in ["human", "heart", "brain", "gut"]:
 		skin.mark(buttons[key], state.view == key)
-	if state.view == "human":
+	if not state.result.is_empty():
+		labels["caption"].text = "Теперь это ваш дом" if state.result == "win" else "Дом опустел"
+	elif state.view == "human":
 		labels["caption"].text = "Один организм. %d маленьких жильца." % state.live_count()
 	elif state.view in ["brain", "gut"]:
 		labels["caption"].text = "Нажми на шарик: +1 еда" if state.available_food[state.view] else "Шарик собран · новый через %d с" % ceili(state.food_remaining(state.view))
@@ -450,7 +452,9 @@ func refresh() -> void:
 		timers += "Семья в сборе"
 	if state.final_left >= 0:
 		timers += "     |     Финал · %d с" % ceili(state.final_left)
-	if state.paused:
+	if not state.result.is_empty():
+		timers = "ИГРА ЗАВЕРШЕНА"
+	elif state.paused:
 		timers = "ПАУЗА  ·  нажми ▶ или пробел"
 	labels["timers"].text = timers
 	skin.fit_label(labels["caption"], 22)

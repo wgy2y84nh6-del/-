@@ -1,0 +1,44 @@
+{
+  "archives": {
+    "You-Are-My-Home-Godot.zip": {
+      "crc": "PASS",
+      "files": 252,
+      "bytes": 3357569,
+      "sha256": "bd09a597d311c32796f24f6b46900849b65ea4737d83c7d19ae184806cdbfb31"
+    },
+    "You-Are-My-Home-Web.zip": {
+      "crc": "PASS",
+      "files": 17,
+      "bytes": 11259897,
+      "sha256": "3752714125d7eac72d8d33c70c880a05c26310095fdd0c3e00e41ad3c89f1ee9"
+    }
+  },
+  "source_inventory": "PASS",
+  "user_ui_pngs": 43,
+  "protected_files": 44,
+  "godot_version": "4.6.3.stable.official.7d41c59c4",
+  "cold_import": "PASS: extracted source, without pre-existing .godot cache",
+  "cold_run": "PASS: main scene launched headlessly with --quit-after 5",
+  "ui_checks": {
+    "passed": 1017,
+    "failures": 0
+  },
+  "model_checks": {
+    "passed": 126,
+    "failures": 0,
+    "model_changed": false
+  },
+  "browser_checks": {
+    "passed": 40,
+    "errors": [],
+    "screenshots": 21
+  },
+  "archive_browser_smoke": {
+    "checks": [
+      "web-zip: menu, start, navigation, food collection, pause and no external requests passed",
+      "standalone: menu, start, navigation, food collection, pause and no external requests passed"
+    ],
+    "errors": []
+  },
+  "result": "PASS"
+}
