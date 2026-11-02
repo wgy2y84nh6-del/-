@@ -17,9 +17,14 @@ func record(main: Control, key: String) -> void:
 		var b = main.buttons[name]
 		if not is_instance_valid(b) or b.is_queued_for_deletion():
 			continue
-		controls[name] = {"x": b.position.x, "y": b.position.y, "w": b.size.x, "h": b.size.y}
+		controls[name] = {"x": b.position.x, "y": b.position.y, "w": b.size.x, "h": b.size.y, "anchors": [b.anchor_left, b.anchor_top, b.anchor_right, b.anchor_bottom], "offsets": [b.offset_left, b.offset_top, b.offset_right, b.offset_bottom]}
 		check(b.position.x >= 0 and b.position.y >= 0 and b.position.x + b.size.x <= 1600.1 and b.position.y + b.size.y <= 900.1, key + ": button stays on screen: " + name)
 		live.append(b)
+
+		if b.get_meta("art_skin", "") != "":
+			var original_size: Vector2 = main.skin.region(b.get_meta("art_skin")).size
+			check(absf(b.size.x / b.size.y - original_size.x / original_size.y) < 0.001, key + ": supplied button aspect ratio preserved")
+
 		if b.get_meta("art_skin", "") == "":
 			var font: Font = b.get_theme_font("font")
 			var font_size: int = b.get_theme_font_size("font_size")
@@ -40,6 +45,11 @@ func run() -> void:
 	root.add_child(main)
 	await process_frame
 	check(main.skin.textures.size() == 43, "All forty-three supplied PNGs are loaded")
+
+	var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ui/catalog.json"))
+	for file in catalog:
+		check(FileAccess.get_sha256("res://assets/ui/" + file) == catalog[file].sha256, "Original supplied PNG unchanged: " + file)
+
 	check(main.mode == "menu" and main.state.paused, "Menu opens without advancing the simulation")
 	check(main.buttons.play.get_meta("art_skin") == "play" and main.buttons.settings.get_meta("art_skin") == "settings" and main.buttons.exit.get_meta("art_skin") == "exit", "Prepared menu images take priority")
 	record(main, "menu")
@@ -60,9 +70,19 @@ func run() -> void:
 	main.state.paused = true
 	main.refresh()
 	await process_frame
-	check(main.world.size == Vector2(640, 360) and main.world.size.x / main.world.size.y == 16.0 / 9.0, "Original scene proportions are preserved")
-	check(main.skin.region("card0").size.x / main.skin.region("card0").size.y == main.ui_images.card.size.x / main.ui_images.card.size.y, "Supplied portrait panel retains its proportions")
+	check(main.world.size == Vector2(800, 450) and main.world.size.x / main.world.size.y == 16.0 / 9.0, "Original scene proportions are preserved")
+	check(main.ui_images.card.pixel_scale == 2.0 and main.ui_images.card.title_scale == 2.0, "Frame corners and author lettering keep uniform scale")
 	check(main.bars.size() == 5, "All four needs and human status remain visible")
+
+	check(main.ui_images.card.position == Vector2(16, 112) and main.ui_images.card.size == Vector2(360, 470), "Pet card matches reference column")
+	check(main.world.position == Vector2(410, 220), "Large scene is centered between sidebars")
+	check(main.buttons.feed.position.x == main.buttons.pet.position.x and main.buttons.pet.position.x == main.buttons.sleep.position.x, "Care buttons share one vertical axis")
+	check(main.buttons.pet.position.y - main.buttons.feed.position.y == 100 and main.buttons.sleep.position.y - main.buttons.pet.position.y == 100, "Care buttons have equal twenty-pixel gaps")
+	check(main.buttons.family0.position.y == main.buttons.family1.position.y and main.buttons.family2.position.y == main.buttons.visit.position.y, "Family uses a compact aligned two-row grid")
+	for key in ["human", "heart", "brain", "gut", "menu", "restart"]:
+		check(absf(main.buttons[key].position.y - 806) < 0.01 and main.buttons[key].size.is_equal_approx(Vector2(236.8, 64)), "Footer dimensions are consistent")
+	check(main.buttons.feed.anchor_left == 1 and main.buttons.restart.anchor_top == 1, "Actual Godot right and bottom anchors are applied")
+
 	record(main, "game")
 	main.state.paused = false
 	main.state.pets[0].hunger = 20.0
@@ -83,7 +103,7 @@ func run() -> void:
 	main.refresh()
 	main.buttons.family1.pressed.emit()
 	main.refresh()
-	check(main.state.selected == 1 and main.ui_images.card.texture == main.skin.atlas("card1"), "Lilu selector switches to the supplied Lilu panel")
+	check(main.state.selected == 1 and main.ui_images.card.art_key == "card1", "Lilu selector switches to the supplied Lilu panel")
 	main.buttons.move.pressed.emit()
 	main.refresh()
 	check(main.state.pets[1].organ == "brain", "Relocation still uses the original action")
@@ -94,7 +114,7 @@ func run() -> void:
 	main.refresh()
 	main.buttons.family2.pressed.emit()
 	main.refresh()
-	check(main.ui_images.card.texture == main.skin.atlas("card2"), "Rostik panel uses supplied artwork")
+	check(main.ui_images.card.art_key == "card2", "Rostik panel uses supplied artwork")
 	main.buttons.move.pressed.emit()
 	main.refresh()
 	check(main.state.pets[2].organ == "gut" and main.bars.human.stage == 3, "Third relocation and third human-stage image work")
@@ -139,6 +159,14 @@ func run() -> void:
 	record(main, "exit")
 	main.buttons.exit_back.pressed.emit()
 	check(main.mode == "menu" and not is_instance_valid(main.overlay), "Exit dialog still returns to menu")
+
+	geometry["_spec"] = {}
+	var layout = load("res://scripts/ui_layout.gd")
+	for key in layout.AREAS:
+		var r: Rect2 = layout.AREAS[key].rect
+		var a: Vector4 = layout.AREAS[key].anchors
+		geometry["_spec"][key] = {"rect": [r.position.x, r.position.y, r.size.x, r.size.y], "anchors": [a.x, a.y, a.z, a.w], "offsets": [r.position.x - a.x * 1600, r.position.y - a.y * 900, r.end.x - a.z * 1600, r.end.y - a.w * 900]}
+
 	if not OS.get_environment("HOME_UI_TEST_OUTPUT").is_empty():
 		FileAccess.open(OS.get_environment("HOME_UI_TEST_OUTPUT"), FileAccess.WRITE).store_string(JSON.stringify(geometry))
 	for player in main.find_children("*", "AudioStreamPlayer", true, false):
