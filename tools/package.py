@@ -28,7 +28,7 @@ def run():
     for generated_import in web.glob('index*.import'):
         generated_import.unlink()
     shutil.copy2(ROOT / 'tools' / 'serve.py', web / 'serve.py')
-    for name in ['GODOT_LICENSE.txt', 'TEST_REPORT.md', 'ART_PLACEMENT.md']:
+    for name in ['GODOT_LICENSE.txt', 'TEST_REPORT.md', 'ART_PLACEMENT.md', 'UI_LAYOUT.md', 'UI_ASSETS.md']:
         shutil.copy2(ROOT / name, web / name)
     licenses = web / 'licenses'
     licenses.mkdir(exist_ok=True)
@@ -37,7 +37,11 @@ def run():
     shutil.copy2(ROOT / 'assets/audio/LICENSE.txt', licenses / 'Original-Audio-CC0.txt')
     (web / 'README.txt').write_text('''ТЫ МОЙ ДОМ · ГОТОВЫЙ GODOT WEB EXPORT
 
-Распакуйте весь архив. В этой папке запустите:
+Для itch.io: загрузите этот ZIP как HTML-игру, включите запуск в браузере,
+задайте область 1600×900 и разрешите полноэкранный режим.
+index.html находится в корне ZIP, потоки выключены.
+
+Для локальной проверки распакуйте весь архив. В этой папке запустите:
   python3 serve.py . --open
 Windows: py serve.py . --open
 
@@ -55,8 +59,7 @@ MIME .wasm: application/wasm. Потоки выключены; COOP/COEP не н
 file:// зависит от политики браузера и в этой среде не проверена:
 управляемый браузер запрещает адреса file://.
 
-Игра не опубликована на внешнем хостинге. Публичной ссылки нет.
-Подробные результаты и ограничения — TEST_REPORT.md.
+Подробные результаты — TEST_REPORT.md. Размеры и якоря — UI_LAYOUT.md.
 ''')
     zip_directory(web, OUT / 'You-Are-My-Home-Web.zip')
     with zipfile.ZipFile(OUT / 'You-Are-My-Home-Godot.zip', 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:

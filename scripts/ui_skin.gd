@@ -5,6 +5,7 @@ const ROOT := "res://assets/ui/"
 const FILL := Color("302037")
 const EDGE := Color("b786b4")
 const INK := Color("ffced4")
+const FrameClass = preload("res://scripts/ui_frame.gd")
 const FILES := {
 	"joy_full": "Заполнение_Радости_Полная.png", "joy_empty": "Заполнение_Радости_Пустая.png",
 	"energy_full": "Заполнение_Энергия_Полная.png", "energy_empty": "Заполнение_Энергия_Пустая.png",
@@ -36,9 +37,11 @@ var regions: Dictionary = {}
 var atlases: Dictionary = {}
 var font: FontVariation
 var heading: FontVariation
+var frame_regions: Dictionary = {}
 
 func _init() -> void:
 	var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(ROOT + "catalog.json"))
+	frame_regions = JSON.parse_string(FileAccess.get_file_as_string(ROOT + "frame_regions.json"))
 	for key in FILES:
 		textures[key] = load(ROOT + FILES[key])
 		var r: Array = catalog[FILES[key]].region
@@ -95,6 +98,18 @@ func frame(fill := FILL, border := EDGE, radius := 12.0) -> StyleBoxFlat:
 	box.content_margin_left = 10
 	box.content_margin_right = 10
 	return box
+
+func panel(parent: Control, key: String, rect: Rect2, title := false, title_size := 2.0, title_position := Vector2(24, 10), centered := false) -> Control:
+	var node = FrameClass.new()
+	node.configure(self, key)
+	node.position = rect.position
+	node.size = rect.size
+	node.show_title = title
+	node.title_scale = title_size
+	node.title_offset = title_position
+	node.center_title = centered
+	parent.add_child(node)
+	return node
 
 func apply_button(button: Button, asset: String) -> void:
 	if button.has_meta("art_skin") and button.get_meta("art_skin") == asset:
@@ -154,6 +169,19 @@ func fit_button(button: Button) -> void:
 		font_size -= 1
 	button.add_theme_font_size_override("font_size", font_size)
 	button.set_meta("fitted_text", button.text)
+
+func fit_label(label: Label, preferred := 22) -> void:
+	var target: Vector2 = label.get_meta("text_box", label.size)
+	var cache_key := label.text + ":" + str(target)
+	if label.get_meta("fitted_label", "") == cache_key:
+		return
+	var font_size := preferred
+	var face: Font = label.get_theme_font("font")
+	while font_size > 16 and face.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > target.x:
+		font_size -= 1
+	label.add_theme_font_size_override("font_size", font_size)
+	label.size = target
+	label.set_meta("fitted_label", cache_key)
 
 class StateOutline extends Control:
 	func _draw() -> void:
