@@ -1,6 +1,8 @@
 class_name HomeWorld
 extends Control
 
+const PET_DISPLAY_SCALE := 1.25
+
 signal food_pressed(organ: String)
 signal pet_pressed(index: int)
 signal pet_released
@@ -39,8 +41,8 @@ func _draw() -> void:
 		if not p.alive or p.organ != state.view:
 			continue
 		var f := art.frame(p)
-		var position_in_art := art.anchor(p) + art.frame_offset(p, f)
-		draw_texture_rect(art.tex(art.pet_file(p, f)), Rect2(position_in_art * scale_factor, Vector2(96, 96) * scale_factor), false)
+		var sprite := parasite_rect(p, f)
+		draw_texture_rect(art.tex(art.pet_file(p, f)), Rect2(sprite.position * scale_factor, sprite.size * scale_factor), false)
 	if state.egg_left >= 0 and state.view == "heart":
 		var f := int(clock / 0.55) % 2
 		draw_texture_rect(art.tex(HomeArt.EGGS[f]), Rect2(Vector2(232, 126) * scale_factor, Vector2(44, 44) * scale_factor), false)
@@ -53,6 +55,15 @@ func _draw() -> void:
 			var lift := sin(clock * 2.2 + i) * 2.5
 			var point := base + Vector2(8 + i * 26 + sway, -6 - (i % 2) * 11 - lift)
 			draw_texture_rect(art.tex("Сердечко.png"), Rect2(point * scale_factor, Vector2(27, 27) * scale_factor), false)
+
+func parasite_rect(p: Dictionary, frame: int) -> Rect2:
+	# Side slots for newborns keep their existing size and position.
+	if p.organ == "heart" and p.id > 1:
+		return Rect2(art.anchor(p) + art.frame_offset(p, frame), Vector2(96, 96))
+	# Enlarge only the parasite around its existing center and foot baseline.
+	var sprite_size := Vector2(96, 96) * PET_DISPLAY_SCALE
+	var origin := art.anchor(p) + Vector2(48, 84) * (1.0 - PET_DISPLAY_SCALE) + art.frame_offset(p, frame) * PET_DISPLAY_SCALE
+	return Rect2(origin, sprite_size)
 
 func _gui_input(event: InputEvent) -> void:
 	if state == null or state.paused or not state.result.is_empty():
@@ -74,7 +85,7 @@ func press_at(point: Vector2) -> void:
 			return
 	for i in range(state.pets.size() - 1, -1, -1):
 		var p: Dictionary = state.pets[i]
-		if p.alive and p.organ == state.view and Rect2(art.anchor(p), Vector2(96, 96)).has_point(local):
+		if p.alive and p.organ == state.view and parasite_rect(p, art.frame(p)).has_point(local):
 			held_pointer = i
 			pet_pressed.emit(i)
 			return

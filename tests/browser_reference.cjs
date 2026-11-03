@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const assert = require('node:assert/strict');
 const path = require('path');
-const out = process.env.HOME_UI_CHECKS || path.resolve('test-results/reference');
+const out = process.env.HOME_UI_CHECKS || path.resolve('test-results/four-ui-fixes');
 fs.mkdirSync(`${out}/screens`, {recursive:true});
 const geometry = JSON.parse(fs.readFileSync(`${out}/ui-geometry.json`));
 const original = JSON.parse(fs.readFileSync(process.env.HOME_UI_FIXTURE || path.join(__dirname, 'fixtures/reference-trio.json')));
@@ -43,6 +43,8 @@ function fixture(count) {
   try {
     const g=await open();const {page,state,click,screenshot}=g;
     await screenshot('final-menu');
+    await page.mouse.click(800,444,{delay:30});await wait(300);
+    check(!(await state()).overlay&&(await state()).mode==='menu','Removed Settings menu location has no active handler');
     await click('music','menu');
     check((await state()).overlay,'Menu music opens settings');
     await page.mouse.click(800,388);await page.keyboard.press('Home');await wait(180);
@@ -68,8 +70,8 @@ function fixture(count) {
     const petPoint=g.point('pet');await page.mouse.move(petPoint.x,petPoint.y);await page.mouse.down();await wait(350);
     check((await state()).petting&&(await state()).hearts===3,'Supplied pet image supports hold');
     await page.mouse.up();await wait(180);check(!(await state()).petting,'Release stops petting');
-    await page.mouse.move(810,445);await page.mouse.down();await wait(200);
-    check((await state()).petting,'Original direct parasite hitbox works after viewport scaling');
+    await page.mouse.move(672.5,420);await page.mouse.down();await wait(200);
+    check((await state()).petting,'Enlarged outer parasite area supports original direct petting');
     await page.mouse.up();
     await click('brain');check((await state()).view==='brain','Matching missing brain button navigates correctly');
     const beforeFood=await state();await page.mouse.click(1115,335);await wait(180);
@@ -77,7 +79,7 @@ function fixture(count) {
     await page.mouse.click(1115,335);await wait(180);check((await state()).food===collected.food,'Repeated food click does not duplicate food');
     await screenshot('final-brain');
     await click('gut');check((await state()).view==='gut','Supplied gut button works');await screenshot('final-gut');
-    await click('visit');check((await state()).view==='heart','Supplied visit button returns to selected pet');
+    await click('heart');check((await state()).view==='heart','Original heart navigation remains available after visit removal');
     await click('sleep');check((await state()).pets[0].sleeping,'Supplied sleep image starts original sleep');
     await screenshot('final-sleep');
     const frames=new Set();for(let i=0;i<8;i++){frames.add((await state()).placements[0].frame);await wait(100);}
@@ -107,7 +109,7 @@ function fixture(count) {
     await t.click('family2');check((await t.state()).selected===2,'Supplied Rostik selector works');await t.screenshot('final-card-rostik');
     await t.click('pause');await t.click('move');
     check((await t.state()).pets[2].organ==='gut','Matching relocation button preserves original Rostik role');
-    await t.click('visit');check((await t.state()).view==='gut','Visit follows relocated pet');
+    await t.click('gut');check((await t.state()).view==='gut','Original gut navigation reaches the relocated pet');
     await t.pause();await t.click('human');await t.screenshot('final-human-stage3');await t.context.close();
     const two=await open(fixture(2));await two.start();await two.pause();await two.click('human');await two.screenshot('final-human-stage2');
     check((await two.state()).live_count===2,'Second human-stage image corresponds to two living pets');await two.context.close();

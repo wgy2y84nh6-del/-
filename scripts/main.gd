@@ -255,7 +255,6 @@ func build_menu() -> void:
 	var logo = skin.image(content, "menu_logo", LayoutClass.rect("menu_logo"))
 	LayoutClass.pin(logo, LayoutClass.TOP_CENTER)
 	button("play", "Играть", LayoutClass.rect("menu_play"), start_or_resume, true, null, 48)
-	button("settings", "Настройки", LayoutClass.rect("menu_settings"), show_settings, false, null, 44)
 	button("music", "Музыка", LayoutClass.rect("menu_music"), show_settings, false, null, 80)
 	button("exit", "Выход", LayoutClass.rect("menu_exit"), show_exit, false, null, 48)
 	text_node("ПАРАЗИТ-ТАМАГОЧИ", Rect2(560, 804, 480, 28), 22).modulate = MUTED
@@ -336,11 +335,8 @@ func build_game() -> void:
 		var key := "family%d" % i
 		var b := button(key, ["Пух", "Лилу", "Ростик"][i], LayoutClass.rect(key), func(): state.select_pet(index), false, null, 22)
 		family.append(b)
-		labels["family_status%d" % i] = text_node("", Rect2(40, 746, 312, 18), 15)
+		labels["family_status%d" % i] = text_node("", Rect2(40, 758, 312, 18), 15)
 		labels["family_status%d" % i].visible = false
-	button("visit", "К питомцу", LayoutClass.rect("visit"), func(): navigate(state.pets[state.selected].organ), false, null, 18)
-	labels["family_count"] = text_node("1 / 3", Rect2(40, 746, 312, 18), 18)
-	labels["family_count"].visible = false
 	var field = skin.panel(content, "world_frame", LayoutClass.rect("world_frame"))
 	LayoutClass.apply(field, "world_frame")
 	world = WorldClass.new()
@@ -401,7 +397,6 @@ func refresh() -> void:
 	skin.fit_label(labels["notice"], 22)
 	labels["food"].text = "Еда · %d" % state.food
 	labels["count"].text = "Паразитов · %d / 3" % state.live_count()
-	labels["family_count"].text = "%d / 3" % state.live_count()
 	labels["human"].text = "ЧЕЛОВЕК · СТАДИЯ %d" % maxi(1, state.live_count())
 	bars["human"].set_stage(maxi(1, state.live_count()))
 	bars["human"].value = 100 - (maxi(1, state.live_count()) - 1) * 32
