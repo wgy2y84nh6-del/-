@@ -2,34 +2,30 @@
   "archives": {
     "You-Are-My-Home-Godot.zip": {
       "crc": "PASS",
-      "files": 252,
-      "bytes": 3357569,
-      "sha256": "bd09a597d311c32796f24f6b46900849b65ea4737d83c7d19ae184806cdbfb31"
+      "entries": 256,
+      "bytes": 3372781,
+      "sha256": "4a80f067d3679c2366f809bbcdc76a5ed6a9bd3bcdea5e6f366fb7da0942f81c"
     },
     "You-Are-My-Home-Web.zip": {
       "crc": "PASS",
-      "files": 17,
-      "bytes": 11259897,
-      "sha256": "3752714125d7eac72d8d33c70c880a05c26310095fdd0c3e00e41ad3c89f1ee9"
+      "entries": 18,
+      "bytes": 11262111,
+      "sha256": "422739d98ce9fbb2df69f252b3e1d2c0553275f82a1051f13a0988bb9fb6cc9d"
     }
   },
   "source_inventory": "PASS",
-  "user_ui_pngs": 43,
-  "protected_files": 44,
+  "protected_files": 184,
+  "gameplay_changed": false,
+  "baseline": "6fbcbf6cc5ac2919a09a0131f6bfc67e14ef00b2",
   "godot_version": "4.6.3.stable.official.7d41c59c4",
-  "cold_import": "PASS: extracted source, without pre-existing .godot cache",
-  "cold_run": "PASS: main scene launched headlessly with --quit-after 5",
+  "cold_import": "PASS: extracted source with no pre-existing .godot cache",
+  "cold_run": "PASS: extracted main scene launched headlessly",
   "ui_checks": {
-    "passed": 1017,
+    "passed": 933,
     "failures": 0
   },
-  "model_checks": {
-    "passed": 126,
-    "failures": 0,
-    "model_changed": false
-  },
   "browser_checks": {
-    "passed": 40,
+    "passed": 41,
     "errors": [],
     "screenshots": 21
   },
@@ -39,6 +35,21 @@
       "standalone: menu, start, navigation, food collection, pause and no external requests passed"
     ],
     "errors": []
+  },
+  "changes": {
+    "family_y": {
+      "old": 598,
+      "new": 610,
+      "size_unchanged": [
+        360,
+        176
+      ]
+    },
+    "main_menu_settings_removed": true,
+    "central_parasite_scale": 1.25,
+    "card_portrait_unchanged": true,
+    "family_visit_and_counter_removed": true,
+    "other_layout_areas_unchanged": 37
   },
   "result": "PASS"
 }

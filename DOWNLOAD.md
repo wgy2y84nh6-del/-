@@ -1,13 +1,14 @@
-# Скачать игру с обновлённой компоновкой
+# Скачать игру: четыре правки интерфейса
 
-* [Полный проект Godot 4 (ZIP)](https://github.com/wgy2y84nh6-del/-/raw/refs/heads/codex/reference-composition/downloads/You-Are-My-Home-Godot.zip)
-* [HTML5 для itch.io (ZIP)](https://github.com/wgy2y84nh6-del/-/raw/refs/heads/codex/reference-composition/downloads/You-Are-My-Home-Web.zip)
-* [Размеры, якоря и выполненные работы по экранам](UI_LAYOUT.md)
+* [Полный исходный проект Godot 4 (ZIP)](https://github.com/wgy2y84nh6-del/-/raw/refs/heads/codex/four-ui-fixes/downloads/You-Are-My-Home-Godot.zip)
+* [Готовый HTML5 ZIP для itch.io](https://github.com/wgy2y84nh6-del/-/raw/refs/heads/codex/four-ui-fixes/downloads/You-Are-My-Home-Web.zip)
+* [Четыре правки и их точные параметры](FOUR_UI_CHANGES.md)
+* [Размеры и якоря по экранам](UI_LAYOUT.md)
 
-Ссылки ведут к настоящим файлам GitHub. Также можно открыть [ветку проекта](https://github.com/wgy2y84nh6-del/-/tree/codex/reference-composition) и выбрать Code → Download ZIP.
+Исходный ZIP: распакуйте, импортируйте project.godot в Godot 4.6.3, дождитесь импорта и нажмите F5. Все сцены, скрипты/UID, 24 исходных рисунка, 43 авторских PNG интерфейса, шрифты, музыка, эффекты и настройки экспорта включены. Кэш, Git и личные сохранения не включаются.
 
-Исходный ZIP: распакуйте, импортируйте project.godot в Godot 4.6.3, дождитесь импорта и нажмите F5. Включены сцена, все скрипты/UID, 24 исходных рисунка, 43 пользовательских PNG интерфейса, шрифты/лицензии, звук и настройки экспорта. Кэш Godot, Git и личные сохранения не включаются.
+Web ZIP: загрузите архив на itch.io как HTML-игру с запуском в браузере, размером 1600×900 и полноэкранным режимом. index.html лежит в корне ZIP; index.js, index.wasm и index.pck остаются рядом. Для локального запуска распакуйте архив и выполните py serve.py . --open на Windows либо python3 serve.py . --open. Обычный index.html запускается по HTTP(S).
 
-Web ZIP: загрузите архив целиком на itch.io как HTML-игру с запуском в браузере, размером 1600×900 и полноэкранным режимом. index.html лежит в корне архива; index.js, index.wasm и index.pck должны находиться рядом. Для локальной проверки распакуйте весь архив и выполните py serve.py . --open на Windows либо python3 serve.py . --open. Обычный index.html запускается по HTTP(S).
+Ссылки ведут к настоящим файлам GitHub. Также доступен Code → Download ZIP в [ветке проекта](https://github.com/wgy2y84nh6-del/-/tree/codex/four-ui-fixes).
 
-Изменены только интерфейс и его компоновка. Игровая модель, скорости потребностей, таймеры, звук, кадры и условия концовок сохранены. Контрольные суммы готовых файлов — downloads/SHA256.json. Результаты проверок — TEST_REPORT.md.
+Изменены только четыре согласованных пункта; игровой процесс сохранён. Контрольные суммы — downloads/SHA256.json. Проверки — TEST_REPORT.md и downloads/VALIDATION.json.

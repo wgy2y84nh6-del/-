@@ -51,11 +51,13 @@ func run() -> void:
 		check(FileAccess.get_sha256("res://assets/ui/" + file) == catalog[file].sha256, "Original supplied PNG unchanged: " + file)
 
 	check(main.mode == "menu" and main.state.paused, "Menu opens without advancing the simulation")
-	check(main.buttons.play.get_meta("art_skin") == "play" and main.buttons.settings.get_meta("art_skin") == "settings" and main.buttons.exit.get_meta("art_skin") == "exit", "Prepared menu images take priority")
+	check(main.buttons.play.get_meta("art_skin") == "play" and main.buttons.exit.get_meta("art_skin") == "exit", "Prepared menu images take priority")
+	check(not main.buttons.has("settings") and main.content.get_node_or_null("settings") == null, "Settings menu button and its handler are absent")
+	check(main.buttons.play.position.is_equal_approx(Vector2(622.4, 276)) and main.buttons.music.position.is_equal_approx(Vector2(622.4, 516)) and main.buttons.exit.position.is_equal_approx(Vector2(622.4, 636)), "Remaining menu buttons keep their exact positions")
 	record(main, "menu")
-	main.buttons.settings.pressed.emit()
+	main.buttons.music.pressed.emit()
 	await process_frame
-	check(is_instance_valid(main.overlay), "Settings button opens overlay")
+	check(is_instance_valid(main.overlay), "Music button retains the original sound settings")
 	var sliders: Array[Node] = main.overlay.find_children("*", "HSlider", true, false)
 	check(sliders.size() == 2, "Both volume controls are retained")
 	sliders[0].value = 0.23
@@ -78,7 +80,28 @@ func run() -> void:
 	check(main.world.position == Vector2(410, 220), "Large scene is centered between sidebars")
 	check(main.buttons.feed.position.x == main.buttons.pet.position.x and main.buttons.pet.position.x == main.buttons.sleep.position.x, "Care buttons share one vertical axis")
 	check(main.buttons.pet.position.y - main.buttons.feed.position.y == 100 and main.buttons.sleep.position.y - main.buttons.pet.position.y == 100, "Care buttons have equal twenty-pixel gaps")
-	check(main.buttons.family0.position.y == main.buttons.family1.position.y and main.buttons.family2.position.y == main.buttons.visit.position.y, "Family uses a compact aligned two-row grid")
+	check(main.buttons.family0.position == Vector2(40, 654) and main.buttons.family1.position == Vector2(204, 654) and main.buttons.family2.position == Vector2(40, 710), "Only the family block moves twelve pixels down")
+	check(not main.buttons.has("visit") and not main.labels.has("family_count") and main.content.get_node_or_null("visit") == null, "Visit and family counter nodes are removed without a placeholder")
+	check(main.portrait.size.is_equal_approx(Vector2(134.4, 134.4)) and main.portrait.position.is_equal_approx(Vector2(128.8, 206)), "Card portrait retains its original scale and position")
+	var sprite: Rect2 = main.world.parasite_rect(main.state.pets[0], 0)
+	check(sprite.size == Vector2(120, 120), "Central parasite grows by twenty-five percent with uniform scale")
+	check(is_equal_approx(sprite.get_center().x, 160) and is_equal_approx(sprite.position.y + 84 * 1.25, 126), "Central parasite keeps its center and foot baseline")
+	main.state.paused = false
+	main.world.press_at(Vector2(105, 80) * 2.5)
+	check(main.state.petting, "New outer part of enlarged parasite keeps direct petting")
+	main.world.release()
+	main.state.paused = true
+	for id in range(1, 4):
+		var resident: Dictionary = main.state.make_pet(id)
+		resident.organ = ["heart", "brain", "gut"][id - 1]
+		for sleeping in [false, true]:
+			resident.sleeping = sleeping
+			for frame in range(2):
+				var bounds: Rect2 = main.world.parasite_rect(resident, frame)
+				check(Rect2(0, 0, 320, 180).encloses(bounds), "Enlarged frames remain inside world for every resident and sleep state")
+	for id in [2, 3]:
+		var newborn: Dictionary = main.state.make_pet(id)
+		check(main.world.parasite_rect(newborn, 0) == Rect2(main.art.anchor(newborn), Vector2(96, 96)), "Existing side newborn slots retain their scale and position")
 	for key in ["human", "heart", "brain", "gut", "menu", "restart"]:
 		check(absf(main.buttons[key].position.y - 806) < 0.01 and main.buttons[key].size.is_equal_approx(Vector2(236.8, 64)), "Footer dimensions are consistent")
 	check(main.buttons.feed.anchor_left == 1 and main.buttons.restart.anchor_top == 1, "Actual Godot right and bottom anchors are applied")
@@ -107,9 +130,9 @@ func run() -> void:
 	main.buttons.move.pressed.emit()
 	main.refresh()
 	check(main.state.pets[1].organ == "brain", "Relocation still uses the original action")
-	main.buttons.visit.pressed.emit()
+	main.buttons.brain.pressed.emit()
 	main.refresh()
-	check(main.state.view == "brain" and main.labels.view.visible, "Visit and missing brain tab work")
+	check(main.state.view == "brain" and main.labels.view.visible, "Original brain navigation still works after visit removal")
 	main.state.pets.append(main.state.make_pet(3))
 	main.refresh()
 	main.buttons.family2.pressed.emit()
